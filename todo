@@ -1,0 +1,20 @@
+struct command {
+    enum command_type;
+    union {
+        struct set_velocity_cmd {
+            vec3f velocity;
+        }
+        
+        struct set_gear_cmd {
+            bool up_down;
+        }
+
+        ...
+    } data;
+}
+
+model should have process_command(command& cmd) where it takes in a command from the cmd_receiver task and has a switch statement which processes each type of command
+
+for example if we get a set_gear_cmd we first have to check if we are grounded, and if we are we log an error that invalid command was sent, and then discard the command
+
+if the command is valid we then set the actua
