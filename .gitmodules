@@ -1,0 +1,6 @@
+[submodule "lib/abseil-cpp"]
+	path = lib/abseil-cpp
+	url = https://github.com/abseil/abseil-cpp
+[submodule "lib/protobuf"]
+	path = lib/protobuf
+	url = https://github.com/protocolbuffers/protobuf
