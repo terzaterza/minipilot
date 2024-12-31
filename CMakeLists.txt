@@ -12,31 +12,15 @@ target_include_directories(emblib_config INTERFACE
     "${PROJECT_SOURCE_DIR}/src"
 )
 
-
-# Protobuf
-set(ABSL_ENABLE_INSTALL ON)
-set(ABSL_BUILD_TESTING OFF)
+# Dependencies
 set(protobuf_BUILD_TESTS OFF)
-
-
 add_subdirectory("lib/emblibcpp")
-add_subdirectory("lib/abseil-cpp")
 add_subdirectory("lib/protobuf")
 
-# Used to compile protobuf files on every build
-include(lib/protobuf/cmake/protobuf-generate.cmake)
-add_library(proto_objects OBJECT
-    protobuf/types.proto
-    protobuf/log.proto
-    protobuf/telemetry.proto
-)
-target_link_libraries(proto_objects PUBLIC libprotobuf)
-protobuf_generate(
-    TARGET proto_objects
-    IMPORT_DIRS ${PROJECT_SOURCE_DIR}/protobuf
-    PROTOC_OUT_DIR ${PROJECT_SOURCE_DIR}/src/protobuf
-)
+# Generate protobuf cpp files from sources
+add_subdirectory("protobuf")
 
+# Source files for minipilot
 add_library(minipilot STATIC
     src/dynamics/copter/copter.cpp
     src/dynamics/copter/quadcopter.cpp
@@ -57,7 +41,7 @@ target_include_directories(minipilot PUBLIC
 
 target_link_libraries(minipilot PUBLIC
     emblib
-    libprotobuf
+    protobuf::libprotobuf
 )
 
 # Executable for testing on the fly
