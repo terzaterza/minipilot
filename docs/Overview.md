@@ -3,7 +3,7 @@ Minipilot is based around 2 main subsystems: state estimation and control.
 
 State estimator is the subsystem responsible for combining sensor data and the mathematical model of the vehicle to estimate the current state (position, velocity, rotation, ...).
 
-Control subsystem takes in the current state and the desired state which is sent to the vehicle by the user and calculates what does the vehicle need to do to achieve the given state. For example if we are driving a car and the user sets the desired speed at 2 m/s, then the control subsytem produces the needed actuation (gas or brake) to achieve that speed.
+Control subsystem takes in the current state and the desired state which is sent to the vehicle by the user and calculates what does the vehicle need to do to achieve that desired state. For example if we are driving a car and the user sets the desired speed at 2 m/s, then the control subsytem produces the needed actuation (gas or brake) to achieve that speed.
 
 ## Vehicle model
 When it comes to describing a vehicle's properties, the dynamics `model` has 2 main roles: providing the mathematical model (forces and torques which act on the vehicle) for the state estimator, and converting the desired control input from the user into the actuator paramters (motor speeds, control surface angles, ...) to achieve the desired state.
