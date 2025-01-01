@@ -39,10 +39,14 @@ target_include_directories(minipilot PUBLIC
     "${PROJECT_SOURCE_DIR}/include"
 )
 
+# Link dependency libraries to minipilot
 target_link_libraries(minipilot PUBLIC
     emblib
     protobuf::libprotobuf
 )
+
+# Wait for protobuf compilation before starting to compile minipilot
+add_dependencies(minipilot proto_objects)
 
 # Testing on the fly
 if (PROJECT_IS_TOP_LEVEL)

@@ -1,16 +1,20 @@
 # Used to compile protobuf files on every build
 
+set(PROTO_SOURCE_DIR ${PROJECT_SOURCE_DIR}/protobuf)
+set(PROTO_OUT_DIR ${PROJECT_SOURCE_DIR}/src/protobuf)
+
 include(${PROJECT_SOURCE_DIR}/lib/protobuf/cmake/protobuf-generate.cmake)
+make_directory(${PROTO_OUT_DIR})
 
 add_library(proto_objects OBJECT
-    ${PROJECT_SOURCE_DIR}/protobuf/types.proto
-    ${PROJECT_SOURCE_DIR}/protobuf/log.proto
-    ${PROJECT_SOURCE_DIR}/protobuf/telemetry.proto
+    ${PROTO_SOURCE_DIR}/types.proto
+    ${PROTO_SOURCE_DIR}/log.proto
+    ${PROTO_SOURCE_DIR}/telemetry.proto
 )
 target_link_libraries(proto_objects PUBLIC libprotobuf)
 
 protobuf_generate(
     TARGET proto_objects
-    IMPORT_DIRS ${PROJECT_SOURCE_DIR}/protobuf
-    PROTOC_OUT_DIR ${PROJECT_SOURCE_DIR}/src/protobuf
+    IMPORT_DIRS ${PROTO_SOURCE_DIR}
+    PROTOC_OUT_DIR ${PROTO_OUT_DIR}
 )
