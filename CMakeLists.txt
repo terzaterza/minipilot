@@ -27,7 +27,7 @@ add_library(minipilot STATIC
     src/tasks/task_logger.cpp
     src/tasks/task_accelerometer.cpp
     src/util/logger.cpp
-    src/mp_main.cpp
+    src/main.cpp
 )
 
 # Header files to be used by minipilot

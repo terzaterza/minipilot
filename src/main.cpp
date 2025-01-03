@@ -1,11 +1,11 @@
-#include "minipilot/mp_main.hpp"
+#include "mp/main.hpp"
 #include "tasks/task_logger.hpp"
 #include "tasks/task_accelerometer.hpp"
 #include "util/logger.hpp"
 
 namespace mp {
 
-int mp_main(const mp_devices_s& devices)
+int main(const devices_s& devices)
 {
     /* If the logging task is not created, this stays uninitialized */
     task_logger* task_logger_ptr = nullptr;
