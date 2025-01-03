@@ -1,5 +1,6 @@
 #include "minipilot/mp_main.hpp"
 #include "tasks/task_logger.hpp"
+#include "tasks/task_accelerometer.hpp"
 #include "util/logger.hpp"
 
 namespace mp {
@@ -19,6 +20,16 @@ int mp_main(const mp_devices_s& devices)
         logger::get_instance().set_output_device(*devices.log_device);
         log_info("Logging available!\n");
     }
+
+    /* Accelerometer is required */
+    if (!devices.accelerometer.probe()) {
+        log_error("Accelerometer not available!");
+        return 1;
+    }
+
+    /* Create the accelerometer task */
+    static task_accelerometer task_accelerometer(devices.accelerometer);
+
 
     log_info("Starting the scheduler...\n");
     

@@ -1,7 +1,8 @@
 #pragma once
 
-#include <cstddef>
 #include <assert.h>
+#include <cstddef>
+#include <chrono>
 
 #define MP_LOGGER_USE_PROTOBUF      0
 
@@ -23,5 +24,9 @@ static constexpr size_t             LOGGER_MSG_BUFFER_SIZE      = LOGGER_MAX_STR
 static constexpr size_t             TASK_LOGGER_QUEUE_SIZE      = 8;
 static constexpr size_t             TASK_LOGGER_STACK_SIZE      = 1024;
 static constexpr task_priority_e    TASK_LOGGER_PRIORITY        = TASK_PRIORITY_VERY_LOW;
+
+static constexpr size_t             TASK_ACCEL_STACK_SIZE       = 512;
+static constexpr task_priority_e    TASK_ACCEL_PRIORITY         = TASK_PRIORITY_REALTIME;
+static constexpr auto               TASK_ACCEL_PERIOD           = std::chrono::milliseconds(5); // 200Hz
 
 }

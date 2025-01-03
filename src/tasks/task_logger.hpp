@@ -1,10 +1,9 @@
 #pragma once
 
 #include "mp_config.hpp"
-
+#include "emblib/driver/io/char_dev.hpp"
 #include "emblib/rtos/task.hpp"
 #include "emblib/rtos/queue.hpp"
-#include "emblib/driver/io/char_dev.hpp"
 #include "etl/string.h"
 
 namespace mp {

@@ -7,9 +7,5 @@
  */
 int main()
 {
-    emblib::stdio_dev std_dev;
-    mp::mp_devices_s devices {
-        .log_device = &std_dev
-    };
-    return mp::mp_main(devices);
+    return 0;
 }

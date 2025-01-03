@@ -1,8 +1,5 @@
 #include "./task_logger.hpp"
 
-#include <algorithm>
-#include <cstring>
-
 namespace mp {
 
 void task_logger::run() noexcept
