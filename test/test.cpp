@@ -1,4 +1,5 @@
-#include "minipilot/mp_main.hpp"
+#include "drivers/dummy_accel.hpp"
+#include "mp/main.hpp"
 #include "emblib/driver/io/stdio_dev.hpp"
 
 /**
@@ -7,5 +8,13 @@
  */
 int main()
 {
-    return 0;
+    dummy_accel accel;
+    emblib::stdio_dev stdio_dev;
+
+    mp::devices_s devices {
+        .accelerometer = accel,
+        .log_device = &stdio_dev
+    };
+
+    return mp::main(devices);
 }
