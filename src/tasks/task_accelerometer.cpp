@@ -7,9 +7,8 @@ void task_accelerometer::run() noexcept
 {
     assert(m_accelerometer.probe());
 
+    float read_data[3];
     while (true) {
-        static float read_data[3];
-
         if (m_accelerometer.read_all_axes(read_data)) {
             emblib::vector3f new_raw {read_data[0], read_data[1], read_data[2]};
             /** @todo Compute filtered value here */
