@@ -5,13 +5,13 @@
 namespace mp {
 
 struct quadcopter_params_s : public copter_params_s {
-    /* Distance from the center of mass (rotation) to the motor(s) */
+    // Distance from the center of mass (rotation) to the motor(s)
     float arm_length;
-    /* Angle between front and rear motors in radians - PI/2 if symmetric */
+    // Angle between front and rear motors in radians - PI/2 if symmetric
     float arm_angle;
-    /* Coefficient converting from RPM^2 to thrust (Newtons) */
+    // Coefficient converting from RPM^2 to thrust (Newtons)
     float thrust_coeff;
-    /* Coefficient converting from RPM^2 to torque around center of mass */
+    // Coefficient converting from RPM^2 to torque around center of mass
     float torque_coeff;
 
     /** @note thrust and torque coeffs are not in copter_params_s since

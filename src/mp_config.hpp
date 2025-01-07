@@ -16,7 +16,7 @@ enum task_priority_e : size_t {
     TASK_PRIORITY_REALTIME  = 5
 };
 
-/* Stack and buffer sizes are in bytes */
+// Stack and buffer sizes are in bytes
 
 static constexpr size_t             LOGGER_MAX_STR_SIZE         = 128;
 static constexpr size_t             LOGGER_MSG_BUFFER_SIZE      = LOGGER_MAX_STR_SIZE + 16; // Approximate addition

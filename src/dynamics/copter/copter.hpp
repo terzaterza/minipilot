@@ -5,11 +5,11 @@
 namespace mp {
 
 struct copter_params_s {
-    /* Mass of the aircraft in kilograms */
+    // Mass of the aircraft in kilograms
     float mass;
-    /* Inertia matrix (tensor) - usually a diagonal matrix */
+    // Inertia matrix (tensor) - usually a diagonal matrix
     emblib::matrix<float, 3, 3> inertia_matrix;
-    /* Linear drag coefficient */
+    // Linear drag coefficient
     emblib::vector3f lin_drag_c;
 };
 

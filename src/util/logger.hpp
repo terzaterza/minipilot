@@ -22,7 +22,7 @@ public:
     static logger& get_instance() noexcept;
 
 private:
-    /* Singleton */
+    // Singleton
     logger() : emblib::logger<LOGGER_MAX_STR_SIZE>(nullptr) {}
 
     void flush(log_level_e level, const buffer_t& buffer, emblib::char_dev& log_device) noexcept override;
