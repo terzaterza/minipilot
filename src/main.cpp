@@ -1,6 +1,7 @@
 #include "mp/main.hpp"
 #include "tasks/task_logger.hpp"
 #include "tasks/task_accelerometer.hpp"
+#include "tasks/task_gyroscope.hpp"
 #include "util/logger.hpp"
 
 namespace mp {
@@ -29,6 +30,15 @@ int main(const devices_s& devices)
 
     // Create the accelerometer task
     static task_accelerometer task_accelerometer(devices.accelerometer);
+
+    // Gyroscope is required
+    if (!devices.gyroscope.probe()) {
+        log_error("Gyroscope not available!");
+        return 1;
+    }
+
+    // Create the gyroscope task
+    static task_gyroscope task_gyroscope(devices.gyroscope);
 
 
     log_info("Starting the scheduler...\n");

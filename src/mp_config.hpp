@@ -29,4 +29,8 @@ static constexpr size_t             TASK_ACCEL_STACK_SIZE       = 512;
 static constexpr task_priority_e    TASK_ACCEL_PRIORITY         = TASK_PRIORITY_REALTIME;
 static constexpr auto               TASK_ACCEL_PERIOD           = std::chrono::milliseconds(5); // 200Hz
 
+static constexpr size_t             TASK_GYRO_STACK_SIZE        = 512;
+static constexpr task_priority_e    TASK_GYRO_PRIORITY          = TASK_PRIORITY_REALTIME;
+static constexpr auto               TASK_GYRO_PERIOD            = std::chrono::milliseconds(5); // 200Hz
+
 }

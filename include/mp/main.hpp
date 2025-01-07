@@ -2,6 +2,7 @@
 
 #include "emblib/driver/io/char_dev.hpp"
 #include "emblib/driver/sensor/accelerometer.hpp"
+#include "emblib/driver/sensor/gyroscope.hpp"
 
 namespace mp {
 
@@ -13,6 +14,7 @@ namespace mp {
  */
 struct devices_s {
     emblib::accelerometer& accelerometer;
+    emblib::gyroscope& gyroscope;
     emblib::char_dev* log_device;
 };
 
