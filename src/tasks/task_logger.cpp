@@ -18,8 +18,8 @@ void task_logger::run() noexcept
 
     log_msg_s recv_msg;
     while (true) {
-        /** @todo Bypass this copying by reading the queue's top element data
-         * and removing the item from queue after write somehow */
+        // TODO: Bypass this copying by reading the queue's top element data
+        // and removing the item from queue after write somehow
         m_log_msg_queue.receive(recv_msg);
 
         if (use_async) {

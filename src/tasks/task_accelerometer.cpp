@@ -12,13 +12,13 @@ void task_accelerometer::run() noexcept
         if (m_accelerometer.read_all_axes(read_data)) {
             // TODO: Add ability to remap axis from the sensor to the expected order here
             emblib::vector3f new_raw {read_data[0], read_data[1], read_data[2]};
-            /** @todo Compute filtered value here */
+            // TODO: Compute the filtered value here
 
             std::scoped_lock lock(m_read_mutex);
             m_last_raw = new_raw;
-            /** @todo Assign new filtered value here from the filter */
+            // TODO: Assign the filtered value here
         } else {
-            log_warning("Accelerometer reading failed");
+            log_warning("Accelerometer reading failed\n");
         }
 
         sleep_periodic(TASK_ACCEL_PERIOD);
