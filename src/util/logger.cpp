@@ -1,5 +1,5 @@
 #include "./logger.hpp"
-#include "protobuf/log.pb.h"
+#include "pb/log.pb.h"
 
 namespace mp {
 

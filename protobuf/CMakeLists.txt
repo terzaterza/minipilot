@@ -1,20 +1,37 @@
 # Used to compile protobuf files on every build
 
-set(PROTO_SOURCE_DIR ${PROJECT_SOURCE_DIR}/protobuf/src)
-set(PROTO_OUT_DIR ${PROJECT_SOURCE_DIR}/src/protobuf)
+# Path to the build protobuf compiler
+set(PROTOC ${CMAKE_CURRENT_BINARY_DIR}/../lib/protobuf/protoc)
 
-include(${PROJECT_SOURCE_DIR}/lib/protobuf/cmake/protobuf-generate.cmake)
-make_directory(${PROTO_OUT_DIR})
+set(PROTO_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+set(PROTO_CPP_OUT ${CMAKE_CURRENT_SOURCE_DIR}/out/cpp/pb)
+set(PROTO_PY_OUT ${CMAKE_CURRENT_SOURCE_DIR}/out/py)
 
-add_library(proto_objects OBJECT
-    ${PROTO_SOURCE_DIR}/log.proto
-    ${PROTO_SOURCE_DIR}/telemetry.proto
-    ${PROTO_SOURCE_DIR}/types.proto
-)
-target_link_libraries(proto_objects PUBLIC libprotobuf)
+make_directory(${PROTO_CPP_OUT})
+make_directory(${PROTO_PY_OUT})
 
-protobuf_generate(
-    TARGET proto_objects
-    IMPORT_DIRS ${PROTO_SOURCE_DIR}
-    PROTOC_OUT_DIR ${PROTO_OUT_DIR}
-)
+
+# Get all protobuf src files
+file(GLOB PROTO_SRCS ${PROTO_SRC_DIR}/*.proto)
+
+# List of all generated cpp files (1 for each proto source)
+set(PROTO_CC_SRCS "")
+foreach(_SRC ${PROTO_SRCS})
+    # Replace the .proto extension in the filename with .pb.cc
+    get_filename_component(_SRC_NAME ${_SRC} NAME_WE)
+    set(_PROTO_CC ${PROTO_CPP_OUT}/${_SRC_NAME}.pb.cc)
+
+    # Generate output files from this proto source
+    add_custom_command(
+        OUTPUT ${_PROTO_CC}
+        DEPENDS ${_SRC}
+        COMMAND ${PROTOC} --cpp_out=${PROTO_CPP_OUT} --python_out=${PROTO_PY_OUT} -I=${PROTO_SRC_DIR} ${_SRC}
+    )
+    # Add this cpp files to the list to be used by the static library
+    list(APPEND PROTO_CC_SRCS ${_PROTO_CC})
+endforeach()
+
+# Static library with all the generated cpp files
+add_library(minipilot-proto STATIC ${PROTO_CC_SRCS})
+target_link_libraries(minipilot-proto PUBLIC libprotobuf)
+target_include_directories(minipilot-proto PUBLIC ${PROTO_CPP_OUT}/..)
