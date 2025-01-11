@@ -5,7 +5,6 @@
 #include "emblib/math/vector.hpp"
 #include "emblib/rtos/task.hpp"
 #include "emblib/rtos/mutex.hpp"
-#include <mutex>
 
 namespace mp {
 
@@ -24,7 +23,7 @@ public:
      */
     emblib::vector3f get_raw() noexcept
     {
-        std::scoped_lock lock{m_read_mutex};
+        emblib::scoped_lock lock{m_read_mutex};
         return m_last_raw;
     }
 
@@ -33,7 +32,7 @@ public:
      */
     emblib::vector3f get_filtered() noexcept
     {
-        std::scoped_lock lock{m_read_mutex};
+        emblib::scoped_lock lock{m_read_mutex};
         return m_last_filtered;
     }
 

@@ -14,8 +14,9 @@ void task_gyroscope::run() noexcept
             emblib::vector3f new_raw {read_data[0], read_data[1], read_data[2]};
             // TODO: Compute the filtered value here
 
-            std::scoped_lock lock(m_read_mutex);
+            emblib::scoped_lock lock(m_read_mutex);
             m_last_raw = new_raw;
+            m_last_filtered = new_raw;
             // TODO: Assign the filtered value here
         } else {
             log_warning("Gyroscope reading failed\n");
