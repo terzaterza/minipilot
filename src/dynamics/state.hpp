@@ -13,6 +13,7 @@ namespace mp {
 struct state_s {
     emblib::vector3f position;
     emblib::vector3f velocity;
+    emblib::vector3f acceleration;
     emblib::vector3f ang_velocity;
     emblib::quaternionf rotationq;
 };

@@ -1,7 +1,7 @@
 #pragma once
 
+#include "state.hpp"
 #include "emblib/math/vector.hpp"
-#include "./state.hpp"
 
 namespace mp {
 
