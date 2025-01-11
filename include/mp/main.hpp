@@ -16,6 +16,7 @@ struct devices_s {
     emblib::accelerometer& accelerometer;
     emblib::gyroscope& gyroscope;
     emblib::char_dev* log_device;
+    emblib::char_dev* telemetry_device;
 };
 
 /**

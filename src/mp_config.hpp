@@ -25,6 +25,11 @@ static constexpr size_t             TASK_LOGGER_QUEUE_SIZE      = 8;
 static constexpr size_t             TASK_LOGGER_STACK_SIZE      = 1024;
 static constexpr task_priority_e    TASK_LOGGER_PRIORITY        = TASK_PRIORITY_VERY_LOW;
 
+static constexpr size_t             TASK_TELEMETRY_STACK_SIZE   = 1024;
+static constexpr size_t             TASK_TELEMETRY_ARENA_SIZE   = 256;
+static constexpr task_priority_e    TASK_TELEMETRY_PRIORITY     = TASK_PRIORITY_LOW;
+static constexpr auto               TASK_TELEMETRY_PERIOD       = std::chrono::milliseconds(200); // 5Hz
+
 static constexpr size_t             TASK_ACCEL_STACK_SIZE       = 512;
 static constexpr task_priority_e    TASK_ACCEL_PRIORITY         = TASK_PRIORITY_REALTIME;
 static constexpr auto               TASK_ACCEL_PERIOD           = std::chrono::milliseconds(5); // 200Hz

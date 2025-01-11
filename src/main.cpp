@@ -1,5 +1,6 @@
 #include "mp/main.hpp"
 #include "tasks/task_logger.hpp"
+#include "tasks/task_telemetry.hpp"
 #include "tasks/task_accelerometer.hpp"
 #include "tasks/task_gyroscope.hpp"
 #include "util/logger.hpp"
@@ -27,7 +28,6 @@ int main(const devices_s& devices)
         log_error("Accelerometer not available!");
         return 1;
     }
-
     // Create the accelerometer task
     static task_accelerometer task_accelerometer(devices.accelerometer);
 
@@ -36,9 +36,20 @@ int main(const devices_s& devices)
         log_error("Gyroscope not available!");
         return 1;
     }
-
     // Create the gyroscope task
     static task_gyroscope task_gyroscope(devices.gyroscope);
+
+    // If there is a telemetry device available, create the telemetry task
+    // Telemetry could also be required (not optional)
+    if (devices.telemetry_device && devices.telemetry_device->probe()) {
+        static task_telemetry task_telemetry(
+            *devices.telemetry_device,
+            task_accelerometer,
+            task_gyroscope
+        );
+    } else {
+        log_warning("Telemetry not available...\n");
+    }
 
 
     log_info("Starting the scheduler...\n");

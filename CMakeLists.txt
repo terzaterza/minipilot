@@ -27,6 +27,7 @@ add_library(minipilot STATIC
     src/tasks/task_accelerometer.cpp
     src/tasks/task_gyroscope.cpp
     src/tasks/task_logger.cpp
+    src/tasks/task_telemetry.cpp
     src/util/logger.cpp
     src/main.cpp
 )
