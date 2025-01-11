@@ -4,11 +4,11 @@ package mp.pb;
 import "types.proto";
 
 // Specify units of each telemetry field
-message telemetry_message {
-    vector3f position       = 1;
-    vector3f velocity       = 2;
-    vector4f rotation       = 3;
-    vector3f ang_velocity   = 4;
+message TelemetryMessage {
+    Vector3f position       = 1;
+    Vector3f velocity       = 2;
+    Vector4f rotation       = 3;
+    Vector3f ang_velocity   = 4;
 
     float battery_voltage   = 5;
     float air_temp          = 6;
@@ -19,6 +19,6 @@ message telemetry_message {
     reserved 9, 10, 11;
 
     // Temporary
-    vector3f acc_raw        = 12;
-    vector3f gyro_raw       = 13;
+    Vector3f acc_raw        = 12;
+    Vector3f gyro_raw       = 13;
 }

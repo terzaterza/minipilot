@@ -1,21 +1,21 @@
 syntax = "proto3";
 package mp.pb;
 
-enum log_level_e {
+enum LogLevel {
     LOG_LEVEL_DEBUG     = 0;
     LOG_LEVEL_INFO      = 1;
     LOG_LEVEL_WARNING   = 2;
     LOG_LEVEL_ERROR     = 3;
 }
 
-enum subsystem_e {
+enum Subsystem {
     SUBSYSTEM_STATE_EST = 0;
     SUBSYSTEM_ACC       = 1;
     SUBSYSTEM_GYRO      = 2;
 }
 
-message log_message {
-    log_level_e level   = 1;
-    string message      = 2;
-    subsystem_e subsys  = 3; // Currently unused
+message LogMessage {
+    string message      = 1;
+    LogLevel level      = 2;
+    Subsystem subsys    = 3; // Currently unused
 }

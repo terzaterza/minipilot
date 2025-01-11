@@ -1,13 +1,13 @@
 syntax = "proto3";
 package mp.pb;
 
-message vector3f {
+message Vector3f {
     float x = 1;
     float y = 2;
     float z = 3;
 }
 
-message vector4f {
+message Vector4f {
     float x = 1;
     float y = 2;
     float z = 3;
