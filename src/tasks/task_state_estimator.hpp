@@ -28,24 +28,7 @@ public:
         m_task_gyro(task_gyro)
     {}
 
-    /**
-     * Get the current state
-     * @note This method takes a mutex to assert
-     * that the state won't be changed during the read
-     */
-    state_s get_state() noexcept
-    {
-        emblib::scoped_lock lock {m_state_mutex};
-        auto& kalman_state = m_kalman.get_state();
-
-        return state_s {
-            .position = m_position,
-            .velocity = get_vel(kalman_state),
-            .acceleration = get_acc(kalman_state),
-            .ang_velocity = get_ang_vel(kalman_state),
-            .rotationq = get_rotq(kalman_state)
-        };
-    }
+    // TODO: Add a get_state method which reads from m_state_readable
 
 private:
     /**
@@ -66,6 +49,7 @@ private:
      * can have a GPS (or some other sensor) measurement every n-th iteration
      */
     static constexpr size_t OBS_DIM = 6;
+
 
     // Convenience typedef
     using state_vec_t = emblib::vectorf<KALMAN_DIM>;
