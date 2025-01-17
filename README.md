@@ -1,8 +1,8 @@
 # Minipilot
 
-Minipilot is a small flight controller that supports multiple dynamics models (quadcopter, hexacopter, fixed wing, etc.) which can also be changed mid-flight (WIP). Code in this core repository is written with a custom driver library [emblibcpp]() which allows it to be platform independent. Minipilot is then compiled as a static libary that can be ported to a desired architecture by providing the entry point function with driver implementations for that specific platform.
+Minipilot is a small flight controller that supports multiple dynamics models (quadcopter, hexacopter, fixed wing, etc.) which can also be changed mid-flight (WIP). Code in this core repository is written with a custom driver library [emblib](https://github.com/terzaterza/emblibcpp) which allows it to be platform independent. Minipilot is then compiled as a static libary that can be ported to a desired architecture by providing the entry point function with driver implementations for that specific platform.
 
-This provides a nice way to test the firmware within a simulator, by just providing drivers that talk to the simulator socket instead of the actual hardware. Unity based simulator with the Minipilot port which runs on POSIX systems can be found at [minipilot-sim]().
+This provides a nice way to test the firmware within a simulator, by just providing drivers that talk to the simulator socket instead of the actual hardware. Unity based simulator with the Minipilot port which runs on POSIX systems can be found at [minipilot-sim](https://github.com/terzaterza/minipilot-sim).
 
 ## Project structure
 Source files are split between `src` and `include` folders, where files in the `src` folder are used only within the Minipilot itself, but the files in the `include` folder are meant to be used when porting this core library to a specific platform.
@@ -11,7 +11,7 @@ Dependencies are located in the `lib` folder, usually as a git submodule, but th
 
 Protobuf source files are located in `protobuf` and are compiled during build to `src/protobuf` for internal use, but can also be compiled manually for external use.
 
-Documents describing the system as a whole, but also smaller part in more detail can be found in `docs`. [Overview]() document should be used as a starting point for understanding the architecture of the software.
+Documents describing the system as a whole, but also smaller part in more detail can be found in `docs`. [Overview](docs/Overview.md) document should be used as a starting point for understanding the architecture of the software.
 
 ## Build
 This project is configured with a (currently) simple [CMake file](CMakeLists.txt). There exists a "dummy" executable, [test](test/test.cpp), which is only built if this is a top level project, ie. if you are not porting this anywhere. This is used to check whether the library compiles and if the build system is setup correctly.
@@ -32,7 +32,7 @@ cmake --build build
 If the build is successful, should have a `build/test/minipilot_test` executable.
 
 ## Porting Minipilot
-Minipilot is compiled as a CMake static libary, meaning it does not run on its own. Entry point of the library is the function `mp::mp_main` declared in [mp_main](include/minipilot/mp_main.hpp). It takes in a single parameter, a struct of device drivers for all devices that the library might use.
+Minipilot is compiled as a CMake static libary, meaning it does not run on its own. Entry point of the library is the function `mp::main` declared in [main.hpp](include/mp/main.hpp). It takes in a single parameter, a struct of device drivers for all devices that the library might use.
 
 To use Minipilot on a specific platform, you would create a standard CMake project with an executable. Somewhere in the CMake file, you would add this project as a subdirectory:
 ```CMake
@@ -42,4 +42,4 @@ After adding the executable, you would link the Minipilot library to that execut
 ```CMake
 target_link_libraries(<executable-name> PRIVATE/PUBLIC minipilot)
 ```
-For a simple example check the `test` folder or the [minipilot-sim]() for a more realistic approach.
+For a simple example check the `test` folder or the [minipilot-sim](https://github.com/terzaterza/minipilot-sim) for a more realistic approach.
