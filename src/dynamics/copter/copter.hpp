@@ -4,6 +4,7 @@
 
 namespace mp {
 
+// Structure containing all parameters describing an abstract copter model
 struct copter_params_s {
     // Mass of the aircraft in kilograms
     float mass;
@@ -31,17 +32,28 @@ public:
      * Returns the acceleration of the model in the global coordinate frame
      * assuming that thrust is produced in the model::UP direction
      */
-    vector3f acc(const vector3f& vel, const quaternionf& rotq) const noexcept override;
+    emblib::vector3f acc(
+        const emblib::vector3f& vel,
+        const emblib::quaternionf& rotq
+    ) const noexcept override;
 
     /**
      * 
      */
-    vector3f ang_acc(const vector3f& vel, const quaternionf& rotq, const vector3f& ang_vel) const noexcept override;
+    emblib::vector3f ang_acc(
+        const emblib::vector3f& vel,
+        const emblib::quaternionf& rotq,
+        const emblib::vector3f& ang_vel
+    ) const noexcept override;
 
     /**
      * 
      */
-    jacobian_s jacobian(const vector3f& vel, const vector4f& rotqv, const vector3f& ang_vel) const noexcept override;
+    jacobian_s jacobian(
+        const emblib::vector3f& vel,
+        const emblib::vectorf<4>& rotqv,
+        const emblib::vector3f& ang_vel
+    ) const noexcept override;
 
     /**
      * 
@@ -53,7 +65,7 @@ private:
      * This method should convert the given thrust and torque values
      * into motor speeds and write those parameters to the motors
      */
-    virtual void actuate(float thrust, const vector3f& torque) noexcept = 0;
+    virtual void actuate(float thrust, const emblib::vector3f& torque) noexcept = 0;
 
     /**
      * Copter implementation should return the currently produced thrust
@@ -64,7 +76,7 @@ private:
     /**
      * Current torque produced by the copter based on motor speeds, ...
      */
-    virtual vector3f torque() const noexcept = 0;
+    virtual emblib::vector3f torque() const noexcept = 0;
 
 private:
     // Implemented as a reference because it is expected that the

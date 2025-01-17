@@ -29,7 +29,6 @@ public:
     {}
 
     // TODO: Add a get_state method which reads from m_state_readable
-
 private:
     /**
      * Dimension of the state vector used by the kalman filter
@@ -53,30 +52,6 @@ private:
 
     // Convenience typedef
     using state_vec_t = emblib::vectorf<KALMAN_DIM>;
-
-    // Extract the velocity vector from the kalman state vector
-    static emblib::vector3f get_vel(const state_vec_t& state) noexcept
-    {
-        return {state(0), state(1), state(2)};
-    }
-    
-    // Extract the acceleration vector from the kalman state vector
-    static emblib::vector3f get_acc(const state_vec_t& state) noexcept
-    {
-        return {state(3), state(4), state(5)};
-    }
-
-    // Extract the rotation quaternion from the kalman state vector
-    static emblib::quaternionf get_rotq(const state_vec_t& state) noexcept
-    {
-        return {state(6), state(7), state(8), state(9)};
-    }
-
-    // Extract the angular velocity vector from the kalman state vector
-    static emblib::vector3f get_ang_vel(const state_vec_t& state) noexcept
-    {
-        return {state(10), state(11), state(12)};
-    }
 
 private:
     /**
@@ -106,6 +81,31 @@ private:
      * Kalman filter state to observation mapping jacobian - `H`
      */
     emblib::matrixf<OBS_DIM, KALMAN_DIM> state_to_obs_jacob(const state_vec_t& state) const noexcept;
+
+    
+    // Extract the velocity vector from the kalman state vector
+    static emblib::vector3f get_vel(const state_vec_t& state) noexcept
+    {
+        return {state(0), state(1), state(2)};
+    }
+    
+    // Extract the acceleration vector from the kalman state vector
+    static emblib::vector3f get_acc(const state_vec_t& state) noexcept
+    {
+        return {state(3), state(4), state(5)};
+    }
+
+    // Extract the rotation quaternion from the kalman state vector
+    static emblib::quaternionf get_rotq(const state_vec_t& state) noexcept
+    {
+        return {state(6), state(7), state(8), state(9)};
+    }
+
+    // Extract the angular velocity vector from the kalman state vector
+    static emblib::vector3f get_ang_vel(const state_vec_t& state) noexcept
+    {
+        return {state(10), state(11), state(12)};
+    }
 
 private:
     emblib::task_stack_t<TASK_STATE_STACK_SIZE> m_task_stack;
