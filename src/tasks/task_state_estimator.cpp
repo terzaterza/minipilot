@@ -71,20 +71,18 @@ task_state_estimator::state_transition_jacob(const state_vec_t& state) const noe
     const auto ang_vel_curr = get_ang_vel(state);
     const auto rotq_curr_v = rotq_curr.as_vector();
 
-    const auto acc_vel_jacob = m_model->acc_vel_jacobian(vel_curr);
-    const auto acc_rotq_jacob = m_model->acc_rotq_jacobian(rotq_curr_v);
-    auto ang_acc_vel_jacob = m_model->ang_acc_vel_jacobian(vel_curr);
-    auto ang_acc_rotq_jacob = m_model->ang_acc_rotq_jacobian(rotq_curr_v);
-    auto ang_acc_ang_vel_jacob = m_model->ang_acc_ang_vel_jacobian(ang_vel_curr);
+    // Not const because some matrices are multiplied by dt before
+    // being inserted into the result matrix
+    auto jacobian = m_model->jacobian(vel_curr, rotq_curr_v, ang_vel_curr);
 
     const float w1 = ang_vel_curr(0);
     const float w2 = ang_vel_curr(1);
     const float w3 = ang_vel_curr(2);
 
     const float q1 = rotq_curr_v(0);
-    const float q2 = rotq_curr_v(0);
-    const float q3 = rotq_curr_v(0);
-    const float q4 = rotq_curr_v(0);
+    const float q2 = rotq_curr_v(1);
+    const float q3 = rotq_curr_v(2);
+    const float q4 = rotq_curr_v(3);
 
     emblib::matrixf<KALMAN_DIM> result {0};
 
@@ -93,8 +91,8 @@ task_state_estimator::state_transition_jacob(const state_vec_t& state) const noe
     result(0, 3) = result(1, 4) = result (2, 5) = dt; // d(vel)/d(acc)
 
     // acc_next = f(vel_curr, rotq_curr)
-    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 3>(result, 3, 0, acc_vel_jacob); // d(acc)/d(vel)
-    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 4>(result, 3, 6, acc_rotq_jacob); // d(acc)/d(rotq)
+    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 3>(result, 3, 0, jacobian.acc_vel); // d(acc)/d(vel)
+    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 4>(result, 3, 6, jacobian.acc_rotq); // d(acc)/d(rotq)
 
     // rotq_next = rotq_curr + (dt/2) b(ang_vel) * rotq_curr
     result(6, 6) = result(7, 7) = result(8, 8) = result(9, 9) = 1; // d(rotq)/d(rotq)
@@ -124,12 +122,12 @@ task_state_estimator::state_transition_jacob(const state_vec_t& state) const noe
     result(9, 12) = -dt / 2 * q2;
 
     // ang_vel_next = ang_vel_curr + dt * ang_acc(vel_curr, rotq_curr, ang_vel_curr)
-    ang_acc_vel_jacob *= dt;
-    ang_acc_rotq_jacob *= dt;
-    ang_acc_ang_vel_jacob *= dt;
-    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 3>(result, 10, 0, ang_acc_vel_jacob); // d(ang_vel)/d(vel)
-    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 4>(result, 10, 6, ang_acc_rotq_jacob); // d(ang_vel)/d(rotq)
-    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 3>(result, 10, 10, ang_acc_ang_vel_jacob); // d(ang_vel)/d(ang_vel)
+    jacobian.ang_acc_vel *= dt;
+    jacobian.ang_acc_rotq *= dt;
+    jacobian.ang_acc_ang_vel *= dt;
+    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 3>(result, 10, 0, jacobian.ang_acc_vel); // d(ang_vel)/d(vel)
+    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 4>(result, 10, 6, jacobian.ang_acc_rotq); // d(ang_vel)/d(rotq)
+    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 3>(result, 10, 10, jacobian.ang_acc_ang_vel); // d(ang_vel)/d(ang_vel)
     result(10, 10) += 1.f;
     result(11, 11) += 1.f;
     result(12, 12) += 1.f;
