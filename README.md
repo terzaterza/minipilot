@@ -13,6 +13,8 @@ Protobuf source files are located in `protobuf` and are compiled during build to
 
 Documents describing the system as a whole, but also smaller part in more detail can be found in `docs`. [Overview](docs/Overview.md) document should be used as a starting point for understanding the architecture of the software.
 
+Python notebooks which are used for formula derivations or signal analysis are found in the `python` folder. This folder has a [requirements.txt](python/requirements.txt) which can be used to install (`pip install -r requirements.txt`) all needed pip dependencies for running the scripts/notebooks.
+
 ## Build
 This project is configured with a (currently) simple [CMake file](CMakeLists.txt). There exists a "dummy" executable, [test](test/test.cpp), which is only built if this is a top level project, ie. if you are not porting this anywhere. This is used to check whether the library compiles and if the build system is setup correctly.
 

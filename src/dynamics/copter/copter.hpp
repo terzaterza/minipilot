@@ -4,6 +4,7 @@
 
 namespace mp {
 
+// Structure containing all parameters describing an abstract copter model
 struct copter_params_s {
     // Mass of the aircraft in kilograms
     float mass;
@@ -13,6 +14,13 @@ struct copter_params_s {
     emblib::vector3f lin_drag_c;
 };
 
+/**
+ * A copter is a vehicle which can generate thrust in a single
+ * direction (currently fixed as `UP`) and can generate torque
+ * in any direction. This model should then be extended to
+ * implement actuator control based on thrust and torque input
+ * and vice versa.
+ */
 class copter : public model {
 
 public:
@@ -24,11 +32,33 @@ public:
      * Returns the acceleration of the model in the global coordinate frame
      * assuming that thrust is produced in the model::UP direction
      */
-    emblib::vector3f acc(const state_s& state) const noexcept override;
-    
-    emblib::vector3f ang_acc(const state_s& state) const noexcept override;
+    emblib::vector3f acc(
+        const emblib::vector3f& vel,
+        const emblib::quaternionf& rotq
+    ) const noexcept override;
 
-    void control(const state_s& state) noexcept override;
+    /**
+     * 
+     */
+    emblib::vector3f ang_acc(
+        const emblib::vector3f& vel,
+        const emblib::quaternionf& rotq,
+        const emblib::vector3f& ang_vel
+    ) const noexcept override;
+
+    /**
+     * 
+     */
+    jacobian_s jacobian(
+        const emblib::vector3f& vel,
+        const emblib::vectorf<4>& rotqv,
+        const emblib::vector3f& ang_vel
+    ) const noexcept override;
+
+    /**
+     * 
+     */
+    void control(const state_s& state, const actuators_s& actuators) noexcept override;
 
 private:
     /**
@@ -37,20 +67,22 @@ private:
      */
     virtual void actuate(float thrust, const emblib::vector3f& torque) noexcept = 0;
 
-private:
-    const copter_params_s& m_params;
+    /**
+     * Copter implementation should return the currently produced thrust
+     * based on motor speeds and appropriate propeller coefficients
+     */
+    virtual float thrust() const noexcept = 0;
 
     /**
-     * This values are computed in the control iteration once the
-     * desired thrust and torque are calculated as the lerp between
-     * the previous values and the new ones
-     * @todo Instead can implement 
-     * virtual pair<float, vec3f> compute_thrust_and_torque()
-     * which would read the current motor speed values and
-     * convert them to the currently produced thrust and torque
-    */
-    float m_approx_current_thrust;
-    emblib::vector3f m_approx_current_torque = {0, 0, 0};
+     * Current torque produced by the copter based on motor speeds, ...
+     */
+    virtual emblib::vector3f torque() const noexcept = 0;
+
+private:
+    // Implemented as a reference because it is expected that the
+    // parameters can change over time.
+    // Alternative to this is to implement the parameters as virtual methods
+    const copter_params_s& m_params;
 };
 
 }
