@@ -84,25 +84,25 @@ private:
 
     
     // Extract the velocity vector from the kalman state vector
-    static emblib::vector3f get_vel(const state_vec_t& state) noexcept
+    static emblib::vector3f get_linear_velocity(const state_vec_t& state) noexcept
     {
         return {state(0), state(1), state(2)};
     }
     
     // Extract the acceleration vector from the kalman state vector
-    static emblib::vector3f get_acc(const state_vec_t& state) noexcept
+    static emblib::vector3f get_linear_acceleration(const state_vec_t& state) noexcept
     {
         return {state(3), state(4), state(5)};
     }
 
     // Extract the rotation quaternion from the kalman state vector
-    static emblib::quaternionf get_rotq(const state_vec_t& state) noexcept
+    static emblib::quaternionf get_rotation_q(const state_vec_t& state) noexcept
     {
         return {state(6), state(7), state(8), state(9)};
     }
 
     // Extract the angular velocity vector from the kalman state vector
-    static emblib::vector3f get_ang_vel(const state_vec_t& state) noexcept
+    static emblib::vector3f get_angular_velocity(const state_vec_t& state) noexcept
     {
         return {state(10), state(11), state(12)};
     }
