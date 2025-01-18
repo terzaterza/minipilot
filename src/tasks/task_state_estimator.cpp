@@ -135,13 +135,94 @@ task_state_estimator::state_transition_jacob(const state_vec_t& state) const noe
     return result;
 }
 
+// This implementation assumes only 2 readings:
+// acceleration and angular velocity
+emblib::vectorf<task_state_estimator::OBS_DIM>
+task_state_estimator::state_to_obs(const state_vec_t& state) const noexcept
+{
+    const auto a = get_acc(state);
+    const auto q = get_rotq(state);
+    const auto w = get_ang_vel(state);
+
+    // Expected accelerometer reading = model acc + gravity mapped
+    // to the local reference frame
+    const emblib::vector3f a_exp = q.conjugate().rotate_vec(a + model::GRAVITY);
+
+    // Expected gyroscope reading is just the angular velocity
+    return {
+        a_exp(0), a_exp(1), a_exp(2),
+        w(0), w(1), w(2)
+    };
+}
+
+// This implementation assumes only 2 readings:
+// acceleration and angular velocity
+emblib::matrixf<task_state_estimator::OBS_DIM, task_state_estimator::KALMAN_DIM>
+task_state_estimator::state_to_obs_jacob(const state_vec_t& state) const noexcept
+{
+    const auto a = get_acc(state);
+    const auto q = get_rotq(state);
+    const auto w = get_ang_vel(state);
+    const auto qv = q.as_vector();
+
+    const float ax = a(0), ay = a(1), az = a(2);
+    const float qw = qv(0), qx = qv(1), qy = qv(2), qz = qv(3);
+    constexpr float g = model::GRAVITY_CONST;
+
+    emblib::matrixf<OBS_DIM, KALMAN_DIM> result {0};
+    
+    // d(a_exp)/d(a)
+    const emblib::matrixf<3> a_exp_a_jacob {
+        {qw*qw + qx*qx - qy*qy - qz*qz, 2.f*(qw*qz + qx*qy), 2.f*(-qw*qy + qx*qz)},
+        {2.f*(-qw*qz + qx*qy), qw*qw - qx*qx + qy*qy - qz*qz, 2.f*(qw*qx + qy*qz)},
+        {2.f*(qw*qy + qx*qz), 2.f*(-qw*qx + qy*qz), qw*qw - qx*qx - qy*qy + qz*qz}
+    };
+
+    // d(a_exp)/d(qv)
+    const emblib::matrixf<3, 4> a_exp_q_jacob {
+        {2.f*(ax*qw + ay*qz - qy*(az - g)), 2.f*(ax*qx + ay*qy + qz*(az - g)), 2.f*(-ax*qy + ay*qx - qw*(az - g)), 2*(-ax*qz + ay*qw + qx*(az - g))},
+        {2.f*(-ax*qz + ay*qw + qx*(az - g)), 2.f*(ax*qy - ay*qx + qw*(az - g)), 2.f*(ax*qx + ay*qy + qz*(az - g)), 2*(-ax*qw - ay*qz + qy*(az - g))},
+        {2.f*(ax*qy - ay*qx + qw*(az - g)), 2.f*(ax*qz - ay*qw - qx*(az - g)), 2.f*(ax*qw + ay*qz - qy*(az - g)), 2*(ax*qx + ay*qy + qz*(az - g))}
+    };
+
+    set_submatrix<OBS_DIM, KALMAN_DIM, 3, 3>(result, 0, 3, a_exp_a_jacob);
+    set_submatrix<OBS_DIM, KALMAN_DIM, 3, 4>(result, 0, 6, a_exp_q_jacob);
+
+    // d(w_exp)/d(w)
+    result(3, 10) = result(3, 11), result(3, 12) = 1.f;
+
+    return result;
+}
+
 void task_state_estimator::run() noexcept
 {
     while (true) {
-        auto accel = m_task_accel.get_filtered();
-        auto ang_vel = m_task_gyro.get_filtered();
+        auto a = m_task_accel.get_filtered();
+        auto w = m_task_gyro.get_filtered();
 
+        const emblib::vectorf<6> observation {
+            a(0), a(1), a(2), w(0), w(1), w(2)
+        };
 
+        // Build based on the model process noise
+        const auto Q = emblib::vectorf<KALMAN_DIM>({
+            .1f, .1f, .1f, .5f, .5f, .5f, .1f, .1f, .1f, .1f, .2f, .2f, .2f
+        }).as_diagonal();
+
+        // Get from the sensor tasks
+        const auto R = emblib::vectorf<OBS_DIM>({
+            .1f, .1f, .1f, .2f, .2f, .2f
+        }).as_diagonal();
+
+        m_kalman.update<OBS_DIM>(
+            [this](const state_vec_t& state) {return state_transition(state);},
+            [this](const state_vec_t& state) {return state_transition_jacob(state);},
+            [this](const state_vec_t& state) {return state_to_obs(state);},
+            [this](const state_vec_t& state) {return state_to_obs_jacob(state);},
+            Q,
+            R,
+            observation
+        );
 
         sleep_periodic(TASK_STATE_PERIOD);
     }

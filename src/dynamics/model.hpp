@@ -2,6 +2,7 @@
 
 #include "state.hpp"
 #include "util/actuators.hpp"
+#include "emblib/driver/sensor/accelerometer.hpp"
 #include "emblib/math/vector.hpp"
 
 namespace mp {
@@ -30,7 +31,8 @@ public:
     static inline const emblib::vector3f DOWN       = -UP;
 
     // Gravity vector definition
-    static inline const emblib::vector3f GRAVITY    = DOWN * 9.80655f;
+    static inline constexpr float GRAVITY_CONST     = emblib::accelerometer::G_TO_MPS2;
+    static inline const emblib::vector3f GRAVITY    = DOWN * GRAVITY_CONST;
 
 public:
     /**
@@ -71,6 +73,11 @@ public:
      */
     virtual void control(const state_s& state, const actuators_s& actuators) noexcept = 0;
 
+    // /**
+    //  * Process noise covariance matrix main diagonal
+    //  * @note A diagonal matrix is created based on this vector
+    //  */
+    // virtual emblib::vector3f acc_cov_diagonal() const noexcept = 0;
     
     /** @todo Add process_command(command_s& command) */
 
