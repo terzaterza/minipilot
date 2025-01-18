@@ -32,7 +32,7 @@ task_state_estimator::state_transition(const state_vec_t& state) const noexcept
     const auto ang_vel_curr = get_ang_vel(state);
 
     emblib::vector3f vel_next = vel_curr + dt * acc_curr;
-    emblib::vector3f acc_next = m_model->acc(vel_curr, rotq_curr);
+    emblib::vector3f acc_next = m_model->get_linear_acceleration(vel_curr, rotq_curr);
 
     // add if m_grounded and acc_next.dot(DOWNWARD) >= 0 then vel_next = acc_next = 0
     // example for testing if grounded: true if vel downward ~ 0 and measured acc downward ~ 1g
@@ -51,7 +51,7 @@ task_state_estimator::state_transition(const state_vec_t& state) const noexcept
     emblib::vectorf<4> rotq_v_next = rotq_v + (dt / 2.f) * b.matmul(rotq_v);
     rotq_v_next /= std::sqrt(rotq_v_next.norm_sq());
     
-    emblib::vector3f ang_acc = m_model->ang_acc(vel_curr, rotq_curr, ang_vel_curr);
+    emblib::vector3f ang_acc = m_model->get_angular_acceleration(vel_curr, ang_vel_curr, rotq_curr);
     emblib::vector3f ang_vel_next = ang_vel_curr + dt * ang_acc;
 
     return {
@@ -73,7 +73,7 @@ task_state_estimator::state_transition_jacob(const state_vec_t& state) const noe
 
     // Not const because some matrices are multiplied by dt before
     // being inserted into the result matrix
-    auto jacobian = m_model->jacobian(vel_curr, rotq_curr_v, ang_vel_curr);
+    auto jacobian = m_model->get_jacobian(vel_curr, ang_vel_curr, rotq_curr_v);
 
     const float w1 = ang_vel_curr(0);
     const float w2 = ang_vel_curr(1);

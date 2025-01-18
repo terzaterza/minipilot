@@ -36,12 +36,22 @@ private:
     /**
      * Compute the motor speeds to produce the given thrust and torque
      */
-    motor_speeds_s inverse_mma(float thrust, const emblib::vector3f& torque) const noexcept;
+    motor_speeds_s inverse_mma(float thrust, const vector3f& torque) const noexcept;
 
     /**
      * Computes the needed speeds via inverse_mma and assigns them to the appropriate motors
      */
-    void actuate(float thrust, const emblib::vector3f& torque) noexcept override;
+    void actuate(float thrust, const vector3f& torque) noexcept override;
+
+    /**
+     * Compute the thrust as the sum of each motor's thrust
+     */
+    float thrust() const noexcept override;
+
+    /**
+     * Compute the torque depending on the current motor speeds
+     */
+    vector3f torque() const noexcept override;
 
 private:
     const quadcopter_params_s& m_params;
