@@ -1,6 +1,7 @@
 #pragma once
 
 #include "./copter.hpp"
+#include "emblib/driver/actuator/motor.hpp"
 
 namespace mp {
 
@@ -18,6 +19,10 @@ struct quadcopter_params_s : public copter_params_s {
      * a helicopter could have different values for the main rotor and tail rotor */
 };
 
+struct quadcopter_actuators_s {
+    emblib::motor &fl, &fr, &bl, &br;
+};
+
 class quadcopter : public copter {
 
     struct motor_speeds_s {
@@ -25,37 +30,45 @@ class quadcopter : public copter {
     };
 
 public:
-    /**
-     * @todo Add motor_driver& fl, fr, bl, br to constructor arguments
-     */
-    explicit quadcopter(const quadcopter_params_s& params) noexcept :
-        copter(params), m_params(params)
+    explicit quadcopter(const quadcopter_params_s& params, quadcopter_actuators_s actuators) noexcept :
+        copter(params), m_params(params), m_actuators(actuators)
     {}
 
 private:
     /**
-     * Compute the motor speeds to produce the given thrust and torque
-     */
-    motor_speeds_s inverse_mma(float thrust, const vector3f& torque) const noexcept;
-
-    /**
      * Computes the needed speeds via inverse_mma and assigns them to the appropriate motors
      */
-    void actuate(float thrust, const vector3f& torque) noexcept override;
+    void actuate(const actuation_s& actuation) noexcept override;
 
     /**
-     * Compute the thrust as the sum of each motor's thrust
+     * Compute the thrust and torque based on current motor speeds
+     * @note Inverse of the `actuate` method
      */
-    float thrust() const noexcept override;
+    actuation_s get_actuation() const noexcept override;
 
     /**
-     * Compute the torque depending on the current motor speeds
+     * Compute the motor speeds to produce the given thrust and torque
+     * @todo Make static and pass the copter params as an arg
      */
-    vector3f torque() const noexcept override;
+    motor_speeds_s inverse_mma(const actuation_s& actuation) const noexcept;
+
+    /**
+     * Read the current motor speeds
+     * @note Assuming that all motor.read_speed calls are successful
+     */
+    motor_speeds_s read_motor_speeds() const noexcept
+    {
+        motor_speeds_s result;
+        m_actuators.fl.read_speed(result.fl);
+        m_actuators.fr.read_speed(result.fr);
+        m_actuators.bl.read_speed(result.bl);
+        m_actuators.br.read_speed(result.br);
+        return result;
+    }
 
 private:
     const quadcopter_params_s& m_params;
-
+    quadcopter_actuators_s m_actuators;
 };
 
 }

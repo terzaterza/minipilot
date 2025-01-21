@@ -1,7 +1,6 @@
 #pragma once
 
 #include "state.hpp"
-#include "util/actuators.hpp"
 #include "util/math.hpp"
 #include "emblib/driver/sensor/accelerometer.hpp"
 
@@ -68,19 +67,18 @@ public:
         const vector3f& angular_velocity,
         const vector4f& rotation_q
     ) const noexcept = 0;
-    
-    /**
-     * Run an iteration of the control algorithm of the model
-     * @note This method should control the actuators of the model
-     * @todo Delta time between control calls should probably be passed as well
-     */
-    virtual void control(const state_s& state, const actuators_s& actuators) noexcept = 0;
 
     // /**
     //  * Process noise covariance matrix main diagonal
     //  * @note A diagonal matrix is created based on this vector
     //  */
     // virtual vector3f acc_cov_diagonal() const noexcept = 0;
+    
+    /**
+     * Run an iteration of the control algorithm of the model
+     * @note This method should control the actuators of the model
+     */
+    virtual void control(const state_s& state, float dt) noexcept = 0;
     
     /** @todo Add process_command(command_s& command) */
 
