@@ -60,28 +60,24 @@ public:
      */
     void control(const state_s& state, float dt) noexcept override;
 
-protected:
-    // Container for thrust and torque values
-    // Can rename to thrust_torque_s
-    struct actuation_s {
-        // Thrust magnitude in the up direction in Newtons [N]
-        float thrust;
-        // Torque vector in Newton-meters [Nm]
-        vector3f torque;
-    };
-
 private:
     /**
      * This method should convert the given thrust and torque values
      * into motor speeds and write those parameters to the motors
      */
-    virtual void actuate(const actuation_s& actuation) noexcept = 0;
+    virtual void actuate(float thrust, const vector3f& torque) noexcept = 0;
 
     /**
      * Copter implementation should return the currently produced thrust
-     * and torque based on motor speeds and appropriate propeller coefficients
+     * based on motor speeds and appropriate propeller coefficients
      */
-    virtual actuation_s get_actuation() const noexcept = 0;
+    virtual float get_thrust() const noexcept = 0;
+
+    /**
+     * Copter implementation should return the currently produced torque
+     * based on motor speeds and appropriate propeller coefficients
+     */
+    virtual vector3f get_torque() const noexcept = 0;
 
 private:
     // Implemented as a reference because it is expected that the

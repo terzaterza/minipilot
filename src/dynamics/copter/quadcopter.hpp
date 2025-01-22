@@ -38,33 +38,31 @@ private:
     /**
      * Computes the needed speeds via inverse_mma and assigns them to the appropriate motors
      */
-    void actuate(const actuation_s& actuation) noexcept override;
+    void actuate(float thrust, const vector3f& torque) noexcept override;
 
     /**
-     * Compute the thrust and torque based on current motor speeds
+     * Compute the thrust based on current motor speeds
      * @note Inverse of the `actuate` method
      */
-    actuation_s get_actuation() const noexcept override;
+    float get_thrust() const noexcept override;
+
+    /**
+     * Compute the torque based on current motor speeds
+     * @note Inverse of the `actuate` method
+     */
+    vector3f get_torque() const noexcept override;
 
     /**
      * Compute the motor speeds to produce the given thrust and torque
      * @todo Make static and pass the copter params as an arg
      */
-    motor_speeds_s inverse_mma(const actuation_s& actuation) const noexcept;
+    motor_speeds_s inverse_mma(float thrust, const vector3f& torque) const noexcept;
 
     /**
      * Read the current motor speeds
      * @note Assuming that all motor.read_speed calls are successful
      */
-    motor_speeds_s read_motor_speeds() const noexcept
-    {
-        motor_speeds_s result;
-        m_actuators.fl.read_speed(result.fl);
-        m_actuators.fr.read_speed(result.fr);
-        m_actuators.bl.read_speed(result.bl);
-        m_actuators.br.read_speed(result.br);
-        return result;
-    }
+    motor_speeds_s read_motor_speeds(bool square = false) const noexcept;
 
 private:
     const quadcopter_params_s& m_params;

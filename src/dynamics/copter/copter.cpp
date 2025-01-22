@@ -8,7 +8,7 @@ vector3f copter::get_linear_acceleration(
 ) const noexcept
 {
     const float m = m_params.mass;
-    return GRAVITY + rotation_q.rotate_vec((thrust() / m) * UP) - m_params.lin_drag_c * linear_velocity / m;
+    return GRAVITY + rotation_q.rotate_vec((get_thrust() / m) * UP) - m_params.lin_drag_c * linear_velocity / m;
 }
 
 vector3f copter::get_angular_acceleration(
@@ -19,7 +19,7 @@ vector3f copter::get_angular_acceleration(
 {
     const matrix3f& I = m_params.inertia_matrix;
     const vector3f I_w = I.matmul(angular_velocity);
-    return (torque() - angular_velocity.cross(I_w)).matdivl(I);
+    return (get_torque() - angular_velocity.cross(I_w)).matdivl(I);
 }
 
 model::jacobian_s copter::get_jacobian(
@@ -29,7 +29,7 @@ model::jacobian_s copter::get_jacobian(
 ) const noexcept
 {
     const float m = m_params.mass;
-    const float T = thrust();
+    const float T = get_thrust();
 
     const auto& I = m_params.inertia_matrix;
     const float Ix = I(0, 0), Iy = I(1, 1), Iz = I(2, 2);
