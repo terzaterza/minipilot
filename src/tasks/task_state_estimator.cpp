@@ -4,8 +4,8 @@
 
 namespace mp {
 
-constexpr std::chrono::duration<float> PERIOD_SECONDS = TASK_STATE_PERIOD;
-constexpr float dt = PERIOD_SECONDS.count();
+// Conversion of the task period to floating point delta time
+static constexpr float dt = std::chrono::duration<float>(TASK_STATE_PERIOD).count();
 
 // Submatrix assignment
 template <size_t R1, size_t C1, size_t R2, size_t C2>
@@ -185,15 +185,15 @@ void task_state_estimator::run() noexcept
 {
     while (true) {
         // Get latest sensor measurements
-        auto a = m_task_accel.get_filtered();
-        auto w = m_task_gyro.get_filtered();
+        auto a_read = m_task_accel.get_filtered();
+        auto w_read = m_task_gyro.get_filtered();
 
         // If a measurement is not available, for example GPS, since it has a slower
         // update rate, create different observation vectors and different measurement
         // noise matrices for the kalman filter update
 
         const emblib::vectorf<6> observation {
-            a(0), a(1), a(2), w(0), w(1), w(2)
+            a_read(0), a_read(1), a_read(2), w_read(0), w_read(1), w_read(2)
         };
 
         // Build based on the model process noise
@@ -215,6 +215,18 @@ void task_state_estimator::run() noexcept
             R,
             observation
         );
+
+        const auto v = get_linear_velocity(m_kalman.get_state());
+        const auto a = get_linear_acceleration(m_kalman.get_state());
+        m_position += v * dt + a * (dt * dt / 2.f);
+
+        m_state_mutex.lock();
+        m_state.position = m_position;
+        m_state.velocity = v;
+        m_state.acceleration = a;
+        m_state.rotationq = get_rotation_q(m_kalman.get_state());
+        m_state.ang_velocity = get_angular_velocity(m_kalman.get_state());
+        m_state_mutex.unlock();
 
         sleep_periodic(TASK_STATE_PERIOD);
     }

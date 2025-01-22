@@ -17,6 +17,7 @@ namespace mp {
 class task_state_estimator : public emblib::task {
 
 public:
+    // TODO: Add an initial state parameter
     explicit task_state_estimator(
         model& model,
         task_accelerometer& task_accel,
@@ -28,7 +29,15 @@ public:
         m_task_gyro(task_gyro)
     {}
 
-    // TODO: Add a get_state method which reads from m_state_readable
+    /**
+     * Get the current state
+     * @todo Maybe return as reference
+     */
+    state_s get_state() noexcept
+    {
+        emblib::scoped_lock lock(m_state_mutex);
+        return m_state;
+    }
 private:
     /**
      * Dimension of the state vector used by the kalman filter
@@ -112,6 +121,8 @@ private:
 
     emblib::vector3f m_position = {0};
     emblib::kalman<KALMAN_DIM> m_kalman;
+    
+    state_s m_state;
     emblib::mutex m_state_mutex;
     
     model* m_model;
