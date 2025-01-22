@@ -1,4 +1,4 @@
-#include "copter.hpp"
+#include "dynamics/copter/copter.hpp"
 
 namespace mp {
 

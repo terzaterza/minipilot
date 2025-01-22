@@ -1,4 +1,4 @@
-#include "quadcopter.hpp"
+#include "dynamics/copter/quadcopter.hpp"
 #include <cmath>
 
 namespace mp {

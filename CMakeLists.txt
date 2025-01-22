@@ -36,6 +36,7 @@ add_library(minipilot STATIC
 # Header files to be used by minipilot
 target_include_directories(minipilot PRIVATE
     "${PROJECT_SOURCE_DIR}/src"
+    "${PROJECT_SOURCE_DIR}/include/mp"
 )
 
 # Header files to be used by external porting projects
