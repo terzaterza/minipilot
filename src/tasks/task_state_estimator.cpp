@@ -6,6 +6,8 @@ namespace mp {
 
 // Conversion of the task period to floating point delta time
 static constexpr float dt = std::chrono::duration<float>(TASK_STATE_PERIOD).count();
+// Max deviation if we are assuming being grounded
+static constexpr float GROUNDED_VERTICAL_VELOCITY_ERROR = 0.01;
 
 // Submatrix assignment
 template <size_t R1, size_t C1, size_t R2, size_t C2>
@@ -34,8 +36,14 @@ task_state_estimator::state_transition(const state_vec_t& state) const noexcept
     emblib::vector3f v_next = v + dt * a;
     emblib::vector3f a_next = m_model->get_linear_acceleration(v, q);
 
-    // add if m_grounded and a_next.dot(DOWNWARD) >= 0 then v_next = a_next = 0
-    // example for testing if grounded: true if vel downward ~ 0 and measured acc downward ~ 1g
+    // If we are grounded and the expected acceleration is downwards (for example if the quadcopter
+    // is producing less than hover lift), remove the downwards acceleration and velocity components
+    const float a_down = a_next.dot(model::DOWN);
+    if (m_grounded && a_down >= 0) {
+        const emblib::vector3f down_mask = (!model::DOWN).cast<float>();
+        a_next *= down_mask;
+        v_next *= down_mask;
+    }
 
     const float w1 = w(0);
     const float w2 = w(1);
@@ -218,14 +226,22 @@ void task_state_estimator::run() noexcept
 
         const auto v = get_linear_velocity(m_kalman.get_state());
         const auto a = get_linear_acceleration(m_kalman.get_state());
+        const auto q = get_rotation_q(m_kalman.get_state());
         m_position += v * dt + a * (dt * dt / 2.f);
 
+        // Check if we're grounded based on the expected acceleration and the actual one
+        const bool vertical_vel_zero = std::abs(v.dot(model::UP)) < GROUNDED_VERTICAL_VELOCITY_ERROR;
+        const bool insufficient_acc = m_model->get_linear_acceleration(v, q).dot(model::UP) < 0;
+        m_grounded = vertical_vel_zero && insufficient_acc;
+
+        // Assign the kalman state to the readable state struct
         m_state_mutex.lock();
         m_state.position = m_position;
         m_state.velocity = v;
         m_state.acceleration = a;
-        m_state.rotationq = get_rotation_q(m_kalman.get_state());
+        m_state.rotationq = q;
         m_state.ang_velocity = get_angular_velocity(m_kalman.get_state());
+        m_state.grounded = m_grounded;
         m_state_mutex.unlock();
 
         sleep_periodic(TASK_STATE_PERIOD);

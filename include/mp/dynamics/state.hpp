@@ -1,7 +1,6 @@
 #pragma once
 
-#include "emblib/math/vector.hpp"
-#include "emblib/math/quaternion.hpp"
+#include "mp/util/math.hpp"
 
 namespace mp {
 
@@ -12,11 +11,12 @@ namespace mp {
  * @todo Rename velocity to linear_velocity, ...
  */
 struct state_s {
-    emblib::vector3f position {0};
-    emblib::vector3f velocity {0};
-    emblib::vector3f acceleration {0};
-    emblib::vector3f ang_velocity {0};
-    emblib::quaternionf rotationq {1, 0, 0, 0};
+    vector3f position {0};
+    vector3f velocity {0};
+    vector3f acceleration {0};
+    vector3f ang_velocity {0};
+    quaternionf rotationq {1, 0, 0, 0};
+    bool grounded;
 };
 
 }

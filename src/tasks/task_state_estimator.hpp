@@ -119,6 +119,7 @@ private:
 private:
     emblib::task_stack_t<TASK_STATE_STACK_SIZE> m_task_stack;
 
+    bool m_grounded = true;
     emblib::vector3f m_position = {0};
     emblib::kalman<KALMAN_DIM> m_kalman;
     
