@@ -54,6 +54,7 @@ void logger::flush(log_level_e level, const buffer_t& buffer, emblib::char_dev& 
     formatted_msg_buffer = level_prefix[static_cast<int>(level)];
     formatted_msg_buffer += ": ";
     formatted_msg_buffer += buffer;
+    formatted_msg_buffer += "\n";
     
     log_device.write(formatted_msg_buffer.c_str(), formatted_msg_buffer.size());
     formatted_msg_buffer.clear();
