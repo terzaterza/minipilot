@@ -1,5 +1,6 @@
 #pragma once
 
+#include "mp/dynamics/model.hpp"
 #include "emblib/driver/io/char_dev.hpp"
 #include "emblib/driver/sensor/accelerometer.hpp"
 #include "emblib/driver/sensor/gyroscope.hpp"
@@ -22,6 +23,6 @@ struct devices_s {
 /**
  * Minipilot entry point
  */
-int main(const devices_s& devices);
+int main(const devices_s& devices, model& model);
 
 }

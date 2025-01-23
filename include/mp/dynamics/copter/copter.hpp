@@ -1,6 +1,6 @@
 #pragma once
 
-#include "dynamics/model.hpp"
+#include "mp/dynamics/model.hpp"
 
 namespace mp {
 
@@ -9,9 +9,9 @@ struct copter_params_s {
     // Mass of the aircraft in kilograms
     float mass;
     // Inertia matrix (tensor) - usually a diagonal matrix
-    emblib::matrix<float, 3, 3> inertia_matrix;
-    // Linear drag coefficient
-    emblib::vector3f lin_drag_c;
+    matrix3f inertia_matrix;
+    // Linear drag coefficient - (can be different for each direction)
+    vector3f lin_drag_c;
 };
 
 /**
@@ -32,51 +32,52 @@ public:
      * Returns the acceleration of the model in the global coordinate frame
      * assuming that thrust is produced in the model::UP direction
      */
-    emblib::vector3f acc(
-        const emblib::vector3f& vel,
-        const emblib::quaternionf& rotq
+    vector3f get_linear_acceleration(
+        const vector3f& linear_velocity,
+        const quaternionf& rotation_q
     ) const noexcept override;
 
     /**
      * 
      */
-    emblib::vector3f ang_acc(
-        const emblib::vector3f& vel,
-        const emblib::quaternionf& rotq,
-        const emblib::vector3f& ang_vel
+    vector3f get_angular_acceleration(
+        const vector3f& linear_velocity,
+        const vector3f& angular_velocity,
+        const quaternionf& rotation_q
     ) const noexcept override;
 
     /**
      * 
      */
-    jacobian_s jacobian(
-        const emblib::vector3f& vel,
-        const emblib::vectorf<4>& rotqv,
-        const emblib::vector3f& ang_vel
+    jacobian_s get_jacobian(
+        const vector3f& linear_velocity,
+        const vector3f& angular_velocity,
+        const vector4f& rotation_q
     ) const noexcept override;
 
     /**
      * 
      */
-    void control(const state_s& state, const actuators_s& actuators) noexcept override;
+    void control(const state_s& state, float dt) noexcept override;
 
 private:
     /**
      * This method should convert the given thrust and torque values
      * into motor speeds and write those parameters to the motors
      */
-    virtual void actuate(float thrust, const emblib::vector3f& torque) noexcept = 0;
+    virtual void actuate(float thrust, const vector3f& torque) noexcept = 0;
 
     /**
      * Copter implementation should return the currently produced thrust
      * based on motor speeds and appropriate propeller coefficients
      */
-    virtual float thrust() const noexcept = 0;
+    virtual float get_thrust() const noexcept = 0;
 
     /**
-     * Current torque produced by the copter based on motor speeds, ...
+     * Copter implementation should return the currently produced torque
+     * based on motor speeds and appropriate propeller coefficients
      */
-    virtual emblib::vector3f torque() const noexcept = 0;
+    virtual vector3f get_torque() const noexcept = 0;
 
 private:
     // Implemented as a reference because it is expected that the

@@ -7,7 +7,7 @@
 
 namespace mp {
 
-int main(const devices_s& devices)
+int main(const devices_s& devices, model& model)
 {
     // If the logging task is not created, this stays uninitialized
     task_logger* task_logger_ptr = nullptr;
@@ -20,7 +20,7 @@ int main(const devices_s& devices)
 
         // Logging device is used directly until the scheduler starts
         logger::get_instance().set_output_device(*devices.log_device);
-        log_info("Logging available!\n");
+        log_info("Logging available!");
     }
 
     // Accelerometer is required
@@ -39,20 +39,28 @@ int main(const devices_s& devices)
     // Create the gyroscope task
     static task_gyroscope task_gyroscope(devices.gyroscope);
 
+    // Create the state estimator task
+    static task_state_estimator task_state_estimator(
+        model,
+        task_accelerometer,
+        task_gyroscope
+    );
+
     // If there is a telemetry device available, create the telemetry task
     // Telemetry could also be required (not optional)
     if (devices.telemetry_device && devices.telemetry_device->probe()) {
         static task_telemetry task_telemetry(
             *devices.telemetry_device,
             task_accelerometer,
-            task_gyroscope
+            task_gyroscope,
+            task_state_estimator
         );
     } else {
-        log_warning("Telemetry not available...\n");
+        log_warning("Telemetry not available...");
     }
 
 
-    log_info("Starting the scheduler...\n");
+    log_info("Starting the scheduler...");
     
     // If a logging device exists, it means the task was already
     // created, so now switch the logging to go through the logging task

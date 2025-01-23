@@ -32,6 +32,7 @@ a = sympy.Matrix([ax, ay, az])
 # Assuming that norm is always 1
 qw, qx, qy, qz = sympy.symbols("q_w q_x q_y q_z")
 q = sympy.Quaternion(qw, qx, qy, qz, norm=1)
+qv = q.to_Matrix()
 
 # Angular velocity
 wx, wy, wz = sympy.symbols("omega_x omega_y omega_z")

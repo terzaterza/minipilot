@@ -16,7 +16,9 @@ message TelemetryMessage {
     float humidity          = 8;
 
     // Temporary
-    reserved 9, 10, 11;
+    reserved 9, 10;
+
+    bool grounded = 11;
 
     // Temporary
     Vector3f acc_raw        = 12;

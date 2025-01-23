@@ -17,6 +17,7 @@ namespace mp {
 class task_state_estimator : public emblib::task {
 
 public:
+    // TODO: Add an initial state parameter
     explicit task_state_estimator(
         model& model,
         task_accelerometer& task_accel,
@@ -28,7 +29,15 @@ public:
         m_task_gyro(task_gyro)
     {}
 
-    // TODO: Add a get_state method which reads from m_state_readable
+    /**
+     * Get the current state
+     * @todo Maybe return as reference
+     */
+    state_s get_state() noexcept
+    {
+        emblib::scoped_lock lock(m_state_mutex);
+        return m_state;
+    }
 private:
     /**
      * Dimension of the state vector used by the kalman filter
@@ -84,25 +93,25 @@ private:
 
     
     // Extract the velocity vector from the kalman state vector
-    static emblib::vector3f get_vel(const state_vec_t& state) noexcept
+    static emblib::vector3f get_linear_velocity(const state_vec_t& state) noexcept
     {
         return {state(0), state(1), state(2)};
     }
     
     // Extract the acceleration vector from the kalman state vector
-    static emblib::vector3f get_acc(const state_vec_t& state) noexcept
+    static emblib::vector3f get_linear_acceleration(const state_vec_t& state) noexcept
     {
         return {state(3), state(4), state(5)};
     }
 
     // Extract the rotation quaternion from the kalman state vector
-    static emblib::quaternionf get_rotq(const state_vec_t& state) noexcept
+    static emblib::quaternionf get_rotation_q(const state_vec_t& state) noexcept
     {
         return {state(6), state(7), state(8), state(9)};
     }
 
     // Extract the angular velocity vector from the kalman state vector
-    static emblib::vector3f get_ang_vel(const state_vec_t& state) noexcept
+    static emblib::vector3f get_angular_velocity(const state_vec_t& state) noexcept
     {
         return {state(10), state(11), state(12)};
     }
@@ -110,8 +119,11 @@ private:
 private:
     emblib::task_stack_t<TASK_STATE_STACK_SIZE> m_task_stack;
 
+    bool m_grounded = true;
     emblib::vector3f m_position = {0};
     emblib::kalman<KALMAN_DIM> m_kalman;
+    
+    state_s m_state;
     emblib::mutex m_state_mutex;
     
     model* m_model;
