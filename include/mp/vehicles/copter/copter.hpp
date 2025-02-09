@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mp/dynamics/model.hpp"
+#include "mp/vehicles/model.hpp"
 
 namespace mp {
 

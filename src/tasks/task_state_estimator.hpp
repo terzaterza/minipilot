@@ -1,8 +1,8 @@
 #pragma once
 
 #include "mp_config.hpp"
-#include "dynamics/model.hpp"
-#include "dynamics/state.hpp"
+#include "vehicles/model.hpp"
+#include "vehicles/state.hpp"
 #include "tasks/task_accelerometer.hpp"
 #include "tasks/task_gyroscope.hpp"
 #include "emblib/dsp/kalman.hpp"

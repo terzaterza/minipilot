@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mp/dynamics/state.hpp"
+#include "mp/vehicles/state.hpp"
 #include "mp/util/math.hpp"
 #include "emblib/driver/sensor/accelerometer.hpp"
 

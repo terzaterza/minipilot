@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mp/dynamics/model.hpp"
+#include "mp/vehicles/model.hpp"
 #include "emblib/driver/io/char_dev.hpp"
 #include "emblib/driver/sensor/accelerometer.hpp"
 #include "emblib/driver/sensor/gyroscope.hpp"
