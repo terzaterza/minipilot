@@ -14,7 +14,7 @@ target_include_directories(emblib_config INTERFACE
 
 # Dependencies
 set(protobuf_BUILD_TESTS OFF)
-add_subdirectory("lib/emblibcpp")
+add_subdirectory("lib/emblib")
 add_subdirectory("lib/protobuf")
 
 # Generate protobuf cpp files from sources

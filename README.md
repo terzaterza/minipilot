@@ -1,6 +1,6 @@
 # Minipilot
 
-Minipilot is a small flight controller that supports multiple dynamics models (quadcopter, hexacopter, fixed wing, etc.) which can also be changed mid-flight (WIP). Code in this core repository is written with a custom driver library [emblib](https://github.com/terzaterza/emblibcpp) which allows it to be platform independent. Minipilot is then compiled as a static libary that can be ported to a desired architecture by providing the entry point function with driver implementations for that specific platform.
+Minipilot is a small flight controller that supports multiple dynamics models (quadcopter, hexacopter, fixed wing, etc.) which can also be changed mid-flight (WIP). Code in this core repository is written with a custom driver library [emblib](https://github.com/terzaterza/emblib) which allows it to be platform independent. Minipilot is then compiled as a static libary that can be ported to a desired architecture by providing the entry point function with driver implementations for that specific platform.
 
 This provides a nice way to test the firmware within a simulator, by just providing drivers that talk to the simulator socket instead of the actual hardware. Unity based simulator with the Minipilot port which runs on POSIX systems can be found at [minipilot-sim](https://github.com/terzaterza/minipilot-sim).
 
