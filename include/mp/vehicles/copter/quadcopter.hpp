@@ -10,21 +10,20 @@ struct quadcopter_params_s : public copter_params_s {
     float arm_length;
     // Angle between front and rear motors in radians - PI/2 if symmetric
     float arm_angle;
-    // Coefficient converting from RPM^2 to thrust (Newtons)
+    // Coefficient converting from (rad/s)^2 to thrust (Newtons)
     float thrust_coeff;
-    // Coefficient converting from RPM^2 to torque around center of mass
+    // Coefficient converting from (rad/s)^2 to torque around center of mass
     float torque_coeff;
-
-    /** @note thrust and torque coeffs are not in copter_params_s since
-     * a helicopter could have different values for the main rotor and tail rotor */
 };
 
 struct quadcopter_actuators_s {
     emblib::motor &fl, &fr, &bl, &br;
 };
 
+
 class quadcopter : public copter {
 
+    // Angular frequency of each motor in rad/s
     struct motor_speeds_s {
         float fl, fr, bl, br;
     };

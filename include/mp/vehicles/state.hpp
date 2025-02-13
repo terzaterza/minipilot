@@ -34,6 +34,7 @@ struct state_s {
     // Quaternion which maps the local frame to the global frame
     quaternionf rotationq {1, 0, 0, 0};
     // If true, there is a normal force acting on the object from the ground
+    // and the object has no vertical velocity
     bool grounded;
 };
 

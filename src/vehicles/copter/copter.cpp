@@ -1,3 +1,4 @@
+#include "mp/util/constants.hpp"
 #include "mp/vehicles/copter/copter.hpp"
 
 namespace mp {
@@ -7,8 +8,10 @@ vector3f copter::get_linear_acceleration(
     const quaternionf& rotation_q
 ) const noexcept
 {
-    const float m = m_params.mass;
-    return GRAVITY + rotation_q.rotate_vec((get_thrust() / m) * UP) - m_params.lin_drag_c * linear_velocity / m;
+    const vector3f thrust_force = get_thrust() * rotation_q.rotate_vec(UP);
+    const vector3f drag_force = -m_params.lin_drag_c * linear_velocity;
+
+    return GV + (thrust_force + drag_force) / m_params.mass;
 }
 
 vector3f copter::get_angular_acceleration(
@@ -17,12 +20,13 @@ vector3f copter::get_angular_acceleration(
     const quaternionf& rotation_q
 ) const noexcept
 {
-    const matrix3f& I = m_params.inertia_matrix;
+    const matrix3f& I = m_params.moment_of_inertia;
     const vector3f I_w = I.matmul(angular_velocity);
+
     return (get_torque() - angular_velocity.cross(I_w)).matdivl(I);
 }
 
-model::jacobian_s copter::get_jacobian(
+vehicle::jacobian_s copter::get_jacobian(
     const vector3f& linear_velocity,
     const vector3f& angular_velocity,
     const vector4f& rotation_q
@@ -31,7 +35,7 @@ model::jacobian_s copter::get_jacobian(
     const float m = m_params.mass;
     const float T = get_thrust();
 
-    const auto& I = m_params.inertia_matrix;
+    const auto& I = m_params.moment_of_inertia;
     const float Ix = I(0, 0), Iy = I(1, 1), Iz = I(2, 2);
     
     const float qw = rotation_q(0), qx = rotation_q(1), qy = rotation_q(2), qz = rotation_q(3);
@@ -39,20 +43,25 @@ model::jacobian_s copter::get_jacobian(
 
     // Simplified model of the inertia matrix is used (only diagonal elements)
     return jacobian_s {
-        .acc_vel = static_cast<vector3f>(-m_params.lin_drag_c / m).as_diagonal(),
-        .acc_rotq = (2 * T / m) * matrixf<3, 4> {
+        .da_dv = matrix3f::diagonal(-m_params.lin_drag_c),
+        .da_dq = (2 * T / m) * matrixf<3, 4> {
             {qy, qz, qw, qx},
             {-qx, -qw, qz, qy},
             {qw, -qx, -qy, qz}
         },
-        .ang_acc_vel = matrixf<3>(0),
-        .ang_acc_ang_vel = matrixf<3> {
+        .ddw_dv = matrixf<3>(0),
+        .ddw_dw = matrixf<3> {
             {0, (Iy-Iz)*wz/Ix, (Iy-Iz)*wy/Ix},
             {(Iz-Ix)*wz/Iy, 0, (Iz-Ix)*wx/Iy},
             {(Ix-Iy)*wy/Iz, (Ix-Iy)*wx/Iz, 0}
         },
-        .ang_acc_rotq = matrixf<3, 4>(0)
+        .ddw_dq = matrixf<3, 4>(0)
     };
+}
+
+void copter::update(const state_s& state, float dt) noexcept
+{
+    
 }
 
 }
