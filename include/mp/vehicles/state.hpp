@@ -24,13 +24,13 @@ namespace mp {
 struct state_s {
     // Position of the center of mass (CoM) of the vehicle in
     // the global (inertial) reference frame
-    vector3f position {0};
+    vector3f position {0, 0, 0};
     // (Linear) velocity of the CoM (= d/dt(position))
-    vector3f velocity {0};
+    vector3f velocity {0, 0, 0};
     // (Linear) acceleration of the CoM in the global reference frame
-    vector3f acceleration {0};
+    vector3f acceleration {0, 0, 0};
     // Angular acceleration vector in the local rotating (non-inertial) reference frame
-    vector3f angular_velocity {0};
+    vector3f angular_velocity {0, 0, 0};
     // Quaternion which maps the local frame to the global frame
     quaternionf rotationq {1, 0, 0, 0};
     // If true, there is a normal force acting on the object from the ground
