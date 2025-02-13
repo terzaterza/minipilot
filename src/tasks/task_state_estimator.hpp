@@ -1,8 +1,8 @@
 #pragma once
 
 #include "mp_config.hpp"
-#include "vehicles/model.hpp"
 #include "vehicles/state.hpp"
+#include "vehicles/vehicle.hpp"
 #include "tasks/task_accelerometer.hpp"
 #include "tasks/task_gyroscope.hpp"
 #include "emblib/dsp/kalman.hpp"
@@ -19,12 +19,12 @@ class task_state_estimator : public emblib::task {
 public:
     // TODO: Add an initial state parameter
     explicit task_state_estimator(
-        model& model,
+        vehicle& vehicle,
         task_accelerometer& task_accel,
         task_gyroscope& task_gyro
     ) noexcept :
         task("Task state estimator", TASK_STATE_PRIORITY, m_task_stack),
-        m_model(&model),
+        m_vehicle(&vehicle),
         m_task_accel(task_accel),
         m_task_gyro(task_gyro)
     {}
@@ -126,7 +126,7 @@ private:
     state_s m_state;
     emblib::mutex m_state_mutex;
     
-    model* m_model;
+    vehicle* m_vehicle;
     task_accelerometer& m_task_accel;
     task_gyroscope& m_task_gyro;
 };

@@ -1,3 +1,4 @@
+#include "mp/util/constants.hpp"
 #include "task_state_estimator.hpp"
 #include "util/logger.hpp"
 #include <cmath>
@@ -34,13 +35,13 @@ task_state_estimator::state_transition(const state_vec_t& state) const noexcept
     const auto w = get_angular_velocity(state);
 
     emblib::vector3f v_next = v + dt * a;
-    emblib::vector3f a_next = m_model->get_linear_acceleration(v, q);
+    emblib::vector3f a_next = m_vehicle->get_linear_acceleration(v, q);
 
     // If we are grounded and the expected acceleration is downwards (for example if the quadcopter
     // is producing less than hover lift), remove the downwards acceleration and velocity components
-    const float a_down = a_next.dot(model::DOWN);
+    const float a_down = a_next.dot(DOWN);
     if (m_grounded && a_down >= 0) {
-        const emblib::vector3f down_mask = (!model::DOWN).cast<float>();
+        const emblib::vector3f down_mask = (!DOWN).cast<float>();
         a_next *= down_mask;
         v_next *= down_mask;
     }
@@ -60,7 +61,7 @@ task_state_estimator::state_transition(const state_vec_t& state) const noexcept
     // Normalize the quaternion due to numerical errors
     qv_next /= std::sqrt(qv.norm_sq());
     
-    emblib::vector3f dw = m_model->get_angular_acceleration(v, w, q);
+    emblib::vector3f dw = m_vehicle->get_angular_acceleration(v, w, q);
     emblib::vector3f w_next = w + dt * dw;
 
     return {
@@ -84,15 +85,15 @@ task_state_estimator::state_transition_jacob(const state_vec_t& state) const noe
 
     // Not const because some matrices are multiplied by dt before
     // being inserted into the result matrix
-    auto jacobian = m_model->get_jacobian(v, w, qv);
+    auto jacobian = m_vehicle->get_jacobian(v, w, qv);
 
     // v_next = v + dt * a
     result(0, 0) = result(1, 1) = result(2, 2) = 1; // d(vel)/d(vel)
     result(0, 3) = result(1, 4) = result (2, 5) = dt; // d(vel)/d(acc)
 
     // a_next = f(v, q)
-    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 3>(result, 3, 0, jacobian.acc_vel); // d(acc)/d(vel)
-    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 4>(result, 3, 6, jacobian.acc_rotq); // d(acc)/d(rotq)
+    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 3>(result, 3, 0, jacobian.da_dv); // d(acc)/d(vel)
+    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 4>(result, 3, 6, jacobian.da_dq); // d(acc)/d(rotq)
 
     // q_next = q + (dt/2) b(w)*q
     
@@ -117,12 +118,12 @@ task_state_estimator::state_transition_jacob(const state_vec_t& state) const noe
     set_submatrix<KALMAN_DIM, KALMAN_DIM, 4, 3>(result, 6, 10, q_w_jacob);
 
     // ang_vel_next = ang_vel_curr + dt * ang_acc(vel_curr, rotq_curr, ang_vel_curr)
-    jacobian.ang_acc_vel *= dt;
-    jacobian.ang_acc_rotq *= dt;
-    jacobian.ang_acc_ang_vel *= dt;
-    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 3>(result, 10, 0, jacobian.ang_acc_vel); // d(ang_vel)/d(vel)
-    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 4>(result, 10, 6, jacobian.ang_acc_rotq); // d(ang_vel)/d(rotq)
-    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 3>(result, 10, 10, jacobian.ang_acc_ang_vel); // d(ang_vel)/d(ang_vel)
+    jacobian.ddw_dv *= dt;
+    jacobian.ddw_dq *= dt;
+    jacobian.ddw_dw *= dt;
+    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 3>(result, 10, 0, jacobian.ddw_dv); // d(ang_vel)/d(vel)
+    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 4>(result, 10, 6, jacobian.ddw_dq); // d(ang_vel)/d(rotq)
+    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 3>(result, 10, 10, jacobian.ddw_dw); // d(ang_vel)/d(ang_vel)
     result(10, 10) += 1.f;
     result(11, 11) += 1.f;
     result(12, 12) += 1.f;
@@ -141,7 +142,7 @@ task_state_estimator::state_to_obs(const state_vec_t& state) const noexcept
 
     // Expected accelerometer reading = model acc + gravity mapped
     // to the local reference frame
-    const emblib::vector3f a_exp = q.conjugate().rotate_vec(a + model::GRAVITY);
+    const emblib::vector3f a_exp = q.conjugate().rotate_vec(a + GV);
 
     // Expected gyroscope reading is just the angular velocity
     return {
@@ -164,7 +165,6 @@ task_state_estimator::state_to_obs_jacob(const state_vec_t& state) const noexcep
 
     const float ax = a(0), ay = a(1), az = a(2);
     const float qw = qv(0), qx = qv(1), qy = qv(2), qz = qv(3);
-    constexpr float g = model::GRAVITY_CONST;
     
     // d(a_exp)/d(a)
     const emblib::matrixf<3> a_exp_a_jacob {
@@ -175,9 +175,9 @@ task_state_estimator::state_to_obs_jacob(const state_vec_t& state) const noexcep
 
     // d(a_exp)/d(qv)
     const emblib::matrixf<3, 4> a_exp_q_jacob {
-        {2.f*(ax*qw + ay*qz - qy*(az - g)), 2.f*(ax*qx + ay*qy + qz*(az - g)), 2.f*(-ax*qy + ay*qx - qw*(az - g)), 2*(-ax*qz + ay*qw + qx*(az - g))},
-        {2.f*(-ax*qz + ay*qw + qx*(az - g)), 2.f*(ax*qy - ay*qx + qw*(az - g)), 2.f*(ax*qx + ay*qy + qz*(az - g)), 2*(-ax*qw - ay*qz + qy*(az - g))},
-        {2.f*(ax*qy - ay*qx + qw*(az - g)), 2.f*(ax*qz - ay*qw - qx*(az - g)), 2.f*(ax*qw + ay*qz - qy*(az - g)), 2*(ax*qx + ay*qy + qz*(az - g))}
+        {2.f*(ax*qw + ay*qz - qy*(az - G)), 2.f*(ax*qx + ay*qy + qz*(az - G)), 2.f*(-ax*qy + ay*qx - qw*(az - G)), 2*(-ax*qz + ay*qw + qx*(az - G))},
+        {2.f*(-ax*qz + ay*qw + qx*(az - G)), 2.f*(ax*qy - ay*qx + qw*(az - G)), 2.f*(ax*qx + ay*qy + qz*(az - G)), 2*(-ax*qw - ay*qz + qy*(az - G))},
+        {2.f*(ax*qy - ay*qx + qw*(az - G)), 2.f*(ax*qz - ay*qw - qx*(az - G)), 2.f*(ax*qw + ay*qz - qy*(az - G)), 2*(ax*qx + ay*qy + qz*(az - G))}
     };
 
     set_submatrix<OBS_DIM, KALMAN_DIM, 3, 3>(result, 0, 3, a_exp_a_jacob);
@@ -230,8 +230,8 @@ void task_state_estimator::run() noexcept
         m_position += v * dt + a * (dt * dt / 2.f);
 
         // Check if we're grounded based on the expected acceleration and the actual one
-        const bool vertical_vel_zero = std::abs(v.dot(model::UP)) < GROUNDED_VERTICAL_VELOCITY_ERROR;
-        const bool insufficient_acc = m_model->get_linear_acceleration(v, q).dot(model::UP) < 0;
+        const bool vertical_vel_zero = std::abs(v.dot(UP)) < GROUNDED_VERTICAL_VELOCITY_ERROR;
+        const bool insufficient_acc = m_vehicle->get_linear_acceleration(v, q).dot(UP) < 0;
         m_grounded = vertical_vel_zero && insufficient_acc;
 
         // Assign the kalman state to the readable state struct
@@ -240,7 +240,7 @@ void task_state_estimator::run() noexcept
         m_state.velocity = v;
         m_state.acceleration = a;
         m_state.rotationq = q;
-        m_state.ang_velocity = get_angular_velocity(m_kalman.get_state());
+        m_state.angular_velocity = get_angular_velocity(m_kalman.get_state());
         m_state.grounded = m_grounded;
         m_state_mutex.unlock();
 
