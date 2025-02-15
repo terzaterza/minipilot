@@ -19,7 +19,7 @@ void task_accelerometer::run() noexcept
             m_last_filtered = new_raw;
             // TODO: Assign the filtered value here
         } else {
-            log_warning("Accelerometer reading failed\n");
+            log_warning("Accelerometer reading failed");
         }
 
         sleep_periodic(TASK_ACCEL_PERIOD);

@@ -10,20 +10,6 @@ static constexpr float dt = std::chrono::duration<float>(TASK_STATE_PERIOD).coun
 // Max deviation if we are assuming being grounded
 static constexpr float GROUNDED_VERTICAL_VELOCITY_ERROR = 0.01;
 
-// Submatrix assignment
-template <size_t R1, size_t C1, size_t R2, size_t C2>
-static void set_submatrix(
-    emblib::matrixf<R1, C1>& dest,
-    size_t top,
-    size_t left,
-    const emblib::matrixf<R2, C2>& src)
-{
-    for (size_t r = 0; r < R2; r++) {
-        for (size_t c = 0; c < C2; c++) {
-            dest(top + r, left + c) = src(r, c);
-        }
-    }
-}
 
 // For implementation details view docs for this task
 task_state_estimator::state_vec_t
@@ -88,42 +74,42 @@ task_state_estimator::state_transition_jacob(const state_vec_t& state) const noe
     auto jacobian = m_vehicle->get_jacobian(v, w, qv);
 
     // v_next = v + dt * a
-    result(0, 0) = result(1, 1) = result(2, 2) = 1; // d(vel)/d(vel)
-    result(0, 3) = result(1, 4) = result (2, 5) = dt; // d(vel)/d(acc)
+    result(0, 0) = result(1, 1) = result(2, 2) = 1; // dv_dv
+    result(0, 3) = result(1, 4) = result (2, 5) = dt; // dv_da
 
     // a_next = f(v, q)
-    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 3>(result, 3, 0, jacobian.da_dv); // d(acc)/d(vel)
-    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 4>(result, 3, 6, jacobian.da_dq); // d(acc)/d(rotq)
-
-    // q_next = q + (dt/2) b(w)*q
+    result.set_submatrix(3, 0, jacobian.da_dv);
+    result.set_submatrix(3, 6, jacobian.da_dq);
     
     const float wx = w(0), wy = w(1), wz = w(2);
     const float qw = qv(0), qx = qv(1), qy = qv(2), qz = qv(3);
     
-    const emblib::matrixf<4> q_q_jacob {
+    // q_next = q + (dt/2) b(w)*q
+    const emblib::matrixf<4> dq_dq {
         {1, -dt/2*wx, -dt/2*wy, -dt/2*wz},
         {dt/2*wx, 1, dt/2*wz, -dt/2*wy},
         {dt/2*wy, -dt/2*wz, 1, dt/2*wx},
         {dt/2*wz, dt/2*wy, -dt/2*wx, 1}
     };
-
-    const emblib::matrixf<4, 3> q_w_jacob = emblib::matrixf<4, 3> {
+    const emblib::matrixf<4, 3> dq_dw = emblib::matrixf<4, 3> {
         {-qx, -qy, -qz},
         {qw, -qz, qy},
         {qz, qw, -qx},
         {-qy, qx, qw}
     } * (dt/2);
 
-    set_submatrix<KALMAN_DIM, KALMAN_DIM, 4, 4>(result, 6, 6, q_q_jacob);
-    set_submatrix<KALMAN_DIM, KALMAN_DIM, 4, 3>(result, 6, 10, q_w_jacob);
+    result.set_submatrix(6, 6, dq_dq);
+    result.set_submatrix(6, 10, dq_dw);
 
-    // ang_vel_next = ang_vel_curr + dt * ang_acc(vel_curr, rotq_curr, ang_vel_curr)
+    // w_next = w + dt * dw(v, q, w)
     jacobian.ddw_dv *= dt;
     jacobian.ddw_dq *= dt;
     jacobian.ddw_dw *= dt;
-    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 3>(result, 10, 0, jacobian.ddw_dv); // d(ang_vel)/d(vel)
-    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 4>(result, 10, 6, jacobian.ddw_dq); // d(ang_vel)/d(rotq)
-    set_submatrix<KALMAN_DIM, KALMAN_DIM, 3, 3>(result, 10, 10, jacobian.ddw_dw); // d(ang_vel)/d(ang_vel)
+    result.set_submatrix(10, 0, jacobian.ddw_dv);
+    result.set_submatrix(10, 6, jacobian.ddw_dq);
+    result.set_submatrix(10, 10, jacobian.ddw_dw);
+    
+    // dw_dw
     result(10, 10) += 1.f;
     result(11, 11) += 1.f;
     result(12, 12) += 1.f;
@@ -180,8 +166,8 @@ task_state_estimator::state_to_obs_jacob(const state_vec_t& state) const noexcep
         {2.f*(ax*qy - ay*qx + qw*(az - G)), 2.f*(ax*qz - ay*qw - qx*(az - G)), 2.f*(ax*qw + ay*qz - qy*(az - G)), 2*(ax*qx + ay*qy + qz*(az - G))}
     };
 
-    set_submatrix<OBS_DIM, KALMAN_DIM, 3, 3>(result, 0, 3, a_exp_a_jacob);
-    set_submatrix<OBS_DIM, KALMAN_DIM, 3, 4>(result, 0, 6, a_exp_q_jacob);
+    result.set_submatrix(0, 3, a_exp_a_jacob);
+    result.set_submatrix(0, 6, a_exp_q_jacob);
 
     // d(w_exp)/d(w)
     result(3, 10) = result(3, 11), result(3, 12) = 1.f;

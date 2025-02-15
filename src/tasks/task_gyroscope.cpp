@@ -19,7 +19,7 @@ void task_gyroscope::run() noexcept
             m_last_filtered = new_raw;
             // TODO: Assign the filtered value here
         } else {
-            log_warning("Gyroscope reading failed\n");
+            log_warning("Gyroscope reading failed");
         }
 
         sleep_periodic(TASK_GYRO_PERIOD);
