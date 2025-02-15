@@ -39,7 +39,6 @@ void task_telemetry::run() noexcept
         vector3f_to_pb(state.velocity, *msg->mutable_velocity());
         vector4f_to_pb(state.rotationq.as_vector(), *msg->mutable_rotation());
         vector3f_to_pb(state.angular_velocity, *msg->mutable_ang_velocity());
-        msg->set_grounded(state.grounded);
 
         // Try to serialize, if successful, transmit
         if (msg->SerializeToArray(m_out_msg_buffer, sizeof(m_out_msg_buffer))) {

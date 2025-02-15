@@ -6,9 +6,8 @@
 namespace mp {
 
 // Conversion of the task period to floating point delta time
+// TODO: Capitalize dt -> DT
 static constexpr float dt = std::chrono::duration<float>(TASK_STATE_PERIOD).count();
-// Max deviation if we are assuming being grounded
-static constexpr float GROUNDED_VERTICAL_VELOCITY_ERROR = 0.01;
 
 
 // For implementation details view docs for this task
@@ -20,18 +19,13 @@ task_state_estimator::state_transition(const state_vec_t& state) const noexcept
     const auto q = get_rotation_q(state);
     const auto w = get_angular_velocity(state);
 
+    // Acceleration is computed by the vehicle based on current actuator settings and the
+    // dynamical model of the vehicle, and the velocity is the integration of acceleration
     emblib::vector3f v_next = v + dt * a;
     emblib::vector3f a_next = m_vehicle->get_linear_acceleration(v, q);
 
-    // If we are grounded and the expected acceleration is downwards (for example if the quadcopter
-    // is producing less than hover lift), remove the downwards acceleration and velocity components
-    const float a_down = a_next.dot(DOWN);
-    if (m_grounded && a_down >= 0) {
-        const emblib::vector3f down_mask = (!DOWN).cast<float>();
-        a_next *= down_mask;
-        v_next *= down_mask;
-    }
-
+    // Quaternion is updated according to the approximation of the first derivative of
+    // the quaternion (w.r.t. time) as a function of angular velocity in the local frame
     const float w1 = w(0);
     const float w2 = w(1);
     const float w3 = w(2);
@@ -41,12 +35,14 @@ task_state_estimator::state_transition(const state_vec_t& state) const noexcept
         {w2, -w3, 0, w1},
         {w3, w2, -w1, 0}
     };
-
+    
     emblib::vectorf<4> qv = q.as_vector();
     emblib::vectorf<4> qv_next = qv + (dt / 2.f) * b.matmul(qv);
     // Normalize the quaternion due to numerical errors
     qv_next /= std::sqrt(qv.norm_sq());
     
+    // Angular acceleration is the first derivative of angular velocity and
+    // is calculated according to the Euler's equations for a rotating reference frame
     emblib::vector3f dw = m_vehicle->get_angular_acceleration(v, w, q);
     emblib::vector3f w_next = w + dt * dw;
 
@@ -215,11 +211,6 @@ void task_state_estimator::run() noexcept
         const auto q = get_rotation_q(m_kalman.get_state());
         m_position += v * dt + a * (dt * dt / 2.f);
 
-        // Check if we're grounded based on the expected acceleration and the actual one
-        const bool vertical_vel_zero = std::abs(v.dot(UP)) < GROUNDED_VERTICAL_VELOCITY_ERROR;
-        const bool insufficient_acc = m_vehicle->get_linear_acceleration(v, q).dot(UP) < 0;
-        m_grounded = vertical_vel_zero && insufficient_acc;
-
         // Assign the kalman state to the readable state struct
         m_state_mutex.lock();
         m_state.position = m_position;
@@ -227,7 +218,6 @@ void task_state_estimator::run() noexcept
         m_state.acceleration = a;
         m_state.rotationq = q;
         m_state.angular_velocity = get_angular_velocity(m_kalman.get_state());
-        m_state.grounded = m_grounded;
         m_state_mutex.unlock();
 
         sleep_periodic(TASK_STATE_PERIOD);
