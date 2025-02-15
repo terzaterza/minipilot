@@ -173,10 +173,14 @@ task_state_estimator::state_to_obs_jacob(const state_vec_t& state) const noexcep
 
 void task_state_estimator::run() noexcept
 {
+    // Information about sensor placement on the vehicle
+    // TODO: Can be moved to `state_to_obs`, but inverse mappings will be needed
+    const vehicle::sensor_config_s& sensor_config = m_vehicle->get_sensor_config();
+    
     while (true) {
         // Get latest sensor measurements
-        auto a_read = m_task_accel.get_filtered();
-        auto w_read = m_task_gyro.get_filtered();
+        vector3f a_read = sensor_config.accelerometer_transform.matmul(m_task_accel.get_filtered());
+        vector3f w_read = sensor_config.gyroscope_transform.matmul(m_task_gyro.get_filtered());
 
         // If a measurement is not available, for example GPS, since it has a slower
         // update rate, create different observation vectors and different measurement
@@ -193,7 +197,7 @@ void task_state_estimator::run() noexcept
 
         // Get from the sensor tasks
         const auto R = emblib::vectorf<OBS_DIM>({
-            .1f, .1f, .1f, .2f, .2f, .2f
+            .01f, .01f, .01f, .02f, .02f, .02f
         }).as_diagonal();
 
         m_kalman.update<OBS_DIM>(

@@ -30,6 +30,21 @@ public:
         matrixf<3, 4> ddw_dq;
     };
 
+    /**
+     * Information about the sensor configurations onboard the vehicle
+     * @todo Make the vehicle able to provide the list of all onboard
+     * sensors and create the appropriate sensor task for each of those
+     * and modify the state estimator to use all the appropriate sensors
+     */
+    struct sensor_config_s {
+        // Map the accelerometer readings to the body coordinate frame
+        matrix3f accelerometer_transform;
+        // Map the gyroscope readings to the body coordinate frame
+        matrix3f gyroscope_transform;
+        
+        // vector3f accelerometer_com_displacement;
+    };
+
 public:
     /**
      * Calculate the model's expected acceleration in the global (inertial) reference
@@ -67,6 +82,11 @@ public:
      */
     virtual void update(const state_s& state, float dt) noexcept = 0;
 
+    /**
+     * Get information about onboard sensors
+     * TODO: View `sensor_config_s` description
+     */
+    virtual const sensor_config_s& get_sensor_config() const noexcept = 0;
     
     /// @todo Add get_cov_matrix() and handle_command()
 
