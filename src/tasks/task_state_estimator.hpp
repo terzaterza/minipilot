@@ -26,7 +26,8 @@ public:
         task("Task state estimator", TASK_STATE_PRIORITY, m_task_stack),
         m_vehicle(&vehicle),
         m_task_accel(task_accel),
-        m_task_gyro(task_gyro)
+        m_task_gyro(task_gyro),
+        m_kalman({0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0})
     {
         m_position = 0;
     }
