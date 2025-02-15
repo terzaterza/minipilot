@@ -3,25 +3,43 @@ package mp.pb;
 
 import "types.proto";
 
+message TelemetryState {
+    Vector3f position           = 1;
+    Vector3f velocity           = 2;
+    Vector3f acceleration       = 3;
+    Vector4f rotation           = 4;
+    Vector3f angular_velocity   = 5;
+}
+
+// Can be part of TelemetryState instead of separate message
+message TelemetryCoords {
+    float longitude = 1;
+    float latitude  = 2;
+    float altitude  = 3;
+}
+
+message TelemetrySensorData {
+    float battery_voltage   = 1;
+    float air_temperature   = 2;
+    float air_pressure      = 3;
+    float humidity          = 4;
+
+    // Just in case
+    reserved 5, 6, 7, 8, 9, 10;
+
+    Vector3f acc_raw        = 11;
+    Vector3f acc_filtered   = 12;
+    Vector3f gyro_raw       = 13;
+    Vector3f gyro_filtered  = 14;
+    // Magnetometer, GPS, ...
+}
+
 // Specify units of each telemetry field
 message TelemetryMessage {
-    Vector3f position       = 1;
-    Vector3f velocity       = 2;
-    Vector4f rotation       = 3;
-    Vector3f ang_velocity   = 4;
-
-    float battery_voltage   = 5;
-    float air_temp          = 6;
-    float air_pressure      = 7;
-    float humidity          = 8;
-
-    // Temporary
-    reserved 9, 10;
-
-    // Temporary
-    Vector3f acc_raw        = 12;
-    Vector3f gyro_raw       = 13;
-
-    // TODO: Add vehicle specific telemetry
-    // TODO: Add longitude and latitude
+    TelemetryState state            = 1;
+    TelemetryCoords coordinates     = 2;
+    TelemetrySensorData sensor_data = 3;
+    
+    // TODO: Add vehicle specific telemetry as oneof
+    // Each vehicle can provide actuator data
 }
