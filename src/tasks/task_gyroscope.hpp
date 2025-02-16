@@ -1,8 +1,8 @@
 #pragma once
 
 #include "mp_config.hpp"
+#include "mp/util/math.hpp"
 #include "emblib/driver/sensor/gyroscope.hpp"
-#include "emblib/math/vector.hpp"
 #include "emblib/rtos/task.hpp"
 #include "emblib/rtos/mutex.hpp"
 
@@ -34,6 +34,22 @@ public:
     {
         emblib::scoped_lock lock{m_read_mutex};
         return m_last_filtered;
+    }
+
+    /**
+     * Get the noise variance matrix based on the gyroscope noise
+     * density and the sampling frequency
+     * TODO: This can be moved to the gyroscope itself, based on
+     * the output data rate which it can track
+     */
+    matrix3f get_noise_variance() const noexcept
+    {
+        // TODO: Change this to gyroscopes output data rate
+        constexpr float FS = 1.f / std::chrono::duration<float>(TASK_GYRO_PERIOD).count();
+
+        float noise_density = m_gyroscope.get_noise_density();
+        float noise_variance = FS * noise_density * noise_density;
+        return vector3f({noise_variance, noise_variance, noise_variance}).as_diagonal();
     }
 
 private:
