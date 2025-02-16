@@ -36,10 +36,10 @@ task_state_estimator::state_transition(const state_vec_t& state) const noexcept
         {w3, w2, -w1, 0}
     };
     
-    emblib::vectorf<4> qv = q.as_vector();
-    emblib::vectorf<4> qv_next = qv + (dt / 2.f) * b.matmul(qv);
+    vector4f qv = q.as_vector();
+    vector4f qv_next = qv + (dt / 2.f) * b.matmul(qv);
     // Normalize the quaternion due to numerical errors
-    qv_next /= std::sqrt(qv.norm_sq());
+    qv_next /= std::sqrt(qv_next.norm_sq());
     
     // Angular acceleration is the first derivative of angular velocity and
     // is calculated according to the Euler's equations for a rotating reference frame
@@ -93,7 +93,6 @@ task_state_estimator::state_transition_jacob(const state_vec_t& state) const noe
         {qz, qw, -qx},
         {-qy, qx, qw}
     } * (dt/2);
-
     result.set_submatrix(6, 6, dq_dq);
     result.set_submatrix(6, 10, dq_dw);
 
@@ -124,7 +123,7 @@ task_state_estimator::state_to_obs(const state_vec_t& state) const noexcept
 
     // Expected accelerometer reading = model acc + gravity mapped
     // to the local reference frame
-    const emblib::vector3f a_exp = q.conjugate().rotate_vec(a + GV);
+    const emblib::vector3f a_exp = q.conjugate().rotate_vec(a - GV);
 
     // Expected gyroscope reading is just the angular velocity
     return {
@@ -142,31 +141,30 @@ task_state_estimator::state_to_obs_jacob(const state_vec_t& state) const noexcep
 
     const auto a = get_linear_acceleration(state);
     const auto q = get_rotation_q(state);
-    const auto w = get_angular_velocity(state);
     const auto qv = q.as_vector();
 
     const float ax = a(0), ay = a(1), az = a(2);
     const float qw = qv(0), qx = qv(1), qy = qv(2), qz = qv(3);
     
     // d(a_exp)/d(a)
-    const emblib::matrixf<3> a_exp_a_jacob {
+    const emblib::matrixf<3> da_da {
         {qw*qw + qx*qx - qy*qy - qz*qz, 2.f*(qw*qz + qx*qy), 2.f*(-qw*qy + qx*qz)},
         {2.f*(-qw*qz + qx*qy), qw*qw - qx*qx + qy*qy - qz*qz, 2.f*(qw*qx + qy*qz)},
         {2.f*(qw*qy + qx*qz), 2.f*(-qw*qx + qy*qz), qw*qw - qx*qx - qy*qy + qz*qz}
     };
 
     // d(a_exp)/d(qv)
-    const emblib::matrixf<3, 4> a_exp_q_jacob {
-        {2.f*(ax*qw + ay*qz - qy*(az - G)), 2.f*(ax*qx + ay*qy + qz*(az - G)), 2.f*(-ax*qy + ay*qx - qw*(az - G)), 2*(-ax*qz + ay*qw + qx*(az - G))},
-        {2.f*(-ax*qz + ay*qw + qx*(az - G)), 2.f*(ax*qy - ay*qx + qw*(az - G)), 2.f*(ax*qx + ay*qy + qz*(az - G)), 2*(-ax*qw - ay*qz + qy*(az - G))},
-        {2.f*(ax*qy - ay*qx + qw*(az - G)), 2.f*(ax*qz - ay*qw - qx*(az - G)), 2.f*(ax*qw + ay*qz - qy*(az - G)), 2*(ax*qx + ay*qy + qz*(az - G))}
+    const emblib::matrixf<3, 4> da_dq {
+        {2.f*(ax*qw + ay*qz - qy*(az + G)), 2.f*(ax*qx + ay*qy + qz*(az + G)), 2.f*(-ax*qy + ay*qx - qw*(az + G)), 2*(-ax*qz + ay*qw + qx*(az + G))},
+        {2.f*(-ax*qz + ay*qw + qx*(az + G)), 2.f*(ax*qy - ay*qx + qw*(az + G)), 2.f*(ax*qx + ay*qy + qz*(az + G)), 2*(-ax*qw - ay*qz + qy*(az + G))},
+        {2.f*(ax*qy - ay*qx + qw*(az + G)), 2.f*(ax*qz - ay*qw - qx*(az + G)), 2.f*(ax*qw + ay*qz - qy*(az + G)), 2*(ax*qx + ay*qy + qz*(az + G))}
     };
 
-    result.set_submatrix(0, 3, a_exp_a_jacob);
-    result.set_submatrix(0, 6, a_exp_q_jacob);
+    result.set_submatrix(0, 3, da_da);
+    result.set_submatrix(0, 6, da_dq);
 
     // d(w_exp)/d(w)
-    result(3, 10) = result(3, 11), result(3, 12) = 1.f;
+    result(3, 10) = result(4, 11), result(5, 12) = 1.f;
 
     return result;
 }
@@ -176,7 +174,12 @@ void task_state_estimator::run() noexcept
     // Information about sensor placement on the vehicle
     // TODO: Can be moved to `state_to_obs`, but inverse mappings will be needed
     const vehicle::sensor_config_s& sensor_config = m_vehicle->get_sensor_config();
-    
+
+    // Measurement variance
+    matrixf<OBS_DIM> R(0);
+    R.set_submatrix(0, 0, m_task_accel.get_noise_variance());
+    R.set_submatrix(3, 3, m_task_gyro.get_noise_variance());
+
     while (true) {
         // Get latest sensor measurements
         vector3f a_read = sensor_config.accelerometer_transform.matmul(m_task_accel.get_filtered());
@@ -190,14 +193,16 @@ void task_state_estimator::run() noexcept
             a_read(0), a_read(1), a_read(2), w_read(0), w_read(1), w_read(2)
         };
 
-        // Build based on the model process noise
+        // TODO: Get Q from the vehicle
+        constexpr float v_noise = 1e-1;
+        constexpr float a_noise = 1e-1;
+        constexpr float q_noise = 1e-1;
+        constexpr float w_noise = 1e-2;
         const auto Q = emblib::vectorf<KALMAN_DIM>({
-            .1f, .1f, .1f, .5f, .5f, .5f, .1f, .1f, .1f, .1f, .2f, .2f, .2f
-        }).as_diagonal();
-
-        // Get from the sensor tasks
-        const auto R = emblib::vectorf<OBS_DIM>({
-            .01f, .01f, .01f, .02f, .02f, .02f
+            v_noise, v_noise, v_noise,
+            a_noise, a_noise, a_noise,
+            q_noise, q_noise, q_noise, q_noise,
+            w_noise, w_noise, w_noise
         }).as_diagonal();
 
         m_kalman.update<OBS_DIM>(

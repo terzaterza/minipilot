@@ -1,5 +1,6 @@
 #include "mp/util/constants.hpp"
 #include "mp/vehicles/copter/copter.hpp"
+#include "util/logger.hpp"
 
 namespace mp {
 
@@ -40,6 +41,7 @@ vehicle::jacobian_s copter::get_jacobian(
     const vector4f& rotation_q
 ) const noexcept
 {
+    const float cd = m_params.lin_drag_c;
     const float m = m_params.mass;
     const float T = get_thrust();
 
@@ -49,9 +51,13 @@ vehicle::jacobian_s copter::get_jacobian(
     const float qw = rotation_q(0), qx = rotation_q(1), qy = rotation_q(2), qz = rotation_q(3);
     const float wx = angular_velocity(0), wy = angular_velocity(1), wz = angular_velocity(2);
 
+    vector3f da_dv_vec (-cd/m);
+    if (m_grounded)
+        da_dv_vec *= (!DOWN).cast<float>();
+
     // Simplified model of the inertia matrix is used (only diagonal elements)
     return jacobian_s {
-        .da_dv = matrix3f::diagonal(-m_params.lin_drag_c),
+        .da_dv = da_dv_vec.as_diagonal(),
         .da_dq = (2 * T / m) * matrixf<3, 4> {
             {qy, qz, qw, qx},
             {-qx, -qw, qz, qy},
@@ -75,8 +81,10 @@ void copter::update_grounded(const state_s& state) noexcept
 
     // Check to see if we are most likely on ground
     if (m_grounded) {
-        if (state.velocity.dot(UP) > TAKEOFF_VELOCITY_THRESHOLD)
+        if (state.velocity.dot(UP) > TAKEOFF_VELOCITY_THRESHOLD) {
             m_grounded = false;
+            log_info("Copter takeoff!");
+        }
     } else {
         bool stationary = state.velocity.norm_sq() < STATIONARY_SPEED_SQ_THRESHOLD;
 
@@ -87,8 +95,10 @@ void copter::update_grounded(const state_s& state) noexcept
 
         // If there is less acceleration downwards than expected and we're stationary,
         // we're probably grounded
-        if (acceleration_diff.dot(DOWN) < STATIONARY_ACC_MINIMUM_DIFF && stationary)
+        if (acceleration_diff.dot(DOWN) < STATIONARY_ACC_MINIMUM_DIFF && stationary) {
             m_grounded = true;
+            log_info("Copter landing!");
+        }
     }
 }
 
