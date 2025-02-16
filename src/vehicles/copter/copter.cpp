@@ -11,7 +11,12 @@ vector3f copter::get_linear_acceleration(
     const vector3f thrust_force = get_thrust() * rotation_q.rotate_vec(UP);
     const vector3f drag_force = -m_params.lin_drag_c * linear_velocity;
 
-    return GV + (thrust_force + drag_force) / m_params.mass;
+    vector3f acc = GV + (thrust_force + drag_force) / m_params.mass;
+    
+    // If grounded remove the downwards acceleration component
+    if (m_grounded && acc.dot(DOWN) > 0)
+        acc *= (!DOWN).cast<float>();
+    return acc;
 }
 
 vector3f copter::get_angular_acceleration(
@@ -20,6 +25,9 @@ vector3f copter::get_angular_acceleration(
     const quaternionf& rotation_q
 ) const noexcept
 {
+    if (m_grounded)
+        return vector3f(0);
+
     const matrix3f& I = m_params.moment_of_inertia;
     const vector3f I_w = I.matmul(angular_velocity);
 
@@ -59,9 +67,34 @@ vehicle::jacobian_s copter::get_jacobian(
     };
 }
 
+void copter::update_grounded(const state_s& state) noexcept
+{
+    static constexpr float TAKEOFF_VELOCITY_THRESHOLD = 0.05f;
+    static constexpr float STATIONARY_SPEED_SQ_THRESHOLD = 0.01f;
+    static constexpr float STATIONARY_ACC_MINIMUM_DIFF = 1.f;
+
+    // Check to see if we are most likely on ground
+    if (m_grounded) {
+        if (state.velocity.dot(UP) > TAKEOFF_VELOCITY_THRESHOLD)
+            m_grounded = false;
+    } else {
+        bool stationary = state.velocity.norm_sq() < STATIONARY_SPEED_SQ_THRESHOLD;
+
+        // This expected acceleration is calculated assuming the grounded is false
+        // since we're in this branch of the if expression
+        const vector3f acceleration_expected = get_linear_acceleration(state.velocity, state.rotationq);
+        const vector3f acceleration_diff = state.acceleration - acceleration_expected;
+
+        // If there is less acceleration downwards than expected and we're stationary,
+        // we're probably grounded
+        if (acceleration_diff.dot(DOWN) < STATIONARY_ACC_MINIMUM_DIFF && stationary)
+            m_grounded = true;
+    }
+}
+
 void copter::update(const state_s& state, float dt) noexcept
 {
-    
+    update_grounded(state);
 }
 
 }

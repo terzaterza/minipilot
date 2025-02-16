@@ -25,7 +25,8 @@ class copter : public vehicle {
 
 public:
     explicit copter(const copter_params_s& params) noexcept :
-        m_params(params)
+        m_params(params),
+        m_grounded(true)
     {}
 
     /**
@@ -79,9 +80,16 @@ private:
      */
     virtual vector3f get_torque() const noexcept = 0;
 
+    /**
+     * Update the grounded guess based on the vehicle state
+     */
+    void update_grounded(const state_s& state) noexcept;
+
 private:
     // Parameters describing a generic copter vehicle
     const copter_params_s& m_params;
+    // Is the copter currently grounded
+    bool m_grounded;
 };
 
 }
