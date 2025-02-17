@@ -47,7 +47,6 @@ target_include_directories(minipilot PUBLIC
 # Link dependency libraries to minipilot
 target_link_libraries(minipilot PUBLIC
     emblib
-    protobuf::libprotobuf
     minipilot-proto
 )
 
