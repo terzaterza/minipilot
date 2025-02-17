@@ -3,6 +3,8 @@
 #include "tasks/task_telemetry.hpp"
 #include "tasks/task_accelerometer.hpp"
 #include "tasks/task_gyroscope.hpp"
+#include "tasks/task_state_estimator.hpp"
+#include "tasks/task_receiver.hpp"
 #include "util/logger.hpp"
 
 namespace mp {
@@ -31,6 +33,14 @@ int main(const devices_s& devices, vehicle& vehicle)
     // Create the accelerometer task
     static task_accelerometer task_accelerometer(devices.accelerometer);
 
+    // Receiver is required
+    if (!devices.receiver_device.probe()) {
+        log_error("Receiver not available!");
+        return 1;
+    }
+    // Create the receiver task
+    static task_receiver task_receiver(devices.receiver_device);
+
     // Gyroscope is required
     if (!devices.gyroscope.probe()) {
         log_error("Gyroscope not available!");
@@ -55,8 +65,9 @@ int main(const devices_s& devices, vehicle& vehicle)
             task_gyroscope,
             task_state_estimator
         );
+        log_info("Telemetry available!");
     } else {
-        log_warning("Telemetry not available...");
+        log_warning("Telemetry not available!");
     }
 
 

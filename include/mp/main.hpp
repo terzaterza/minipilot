@@ -18,6 +18,7 @@ struct devices_s {
     emblib::gyroscope& gyroscope;
     emblib::char_dev* log_device;
     emblib::char_dev* telemetry_device;
+    emblib::char_dev& receiver_device;
 };
 
 /**
