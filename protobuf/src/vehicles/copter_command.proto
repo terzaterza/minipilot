@@ -1,0 +1,23 @@
+syntax = "proto3";
+package mp.pb.vehicles;
+
+import "types.proto";
+
+message CopterCommandSetAngularVelocity {
+    Vector3f torque = 1;
+    float thrust    = 2;
+}
+
+message CopterCommandSetLinearVelocity {
+    Vector3f velocity   = 1;
+    float direction     = 2;
+}
+
+message CopterCommand {
+    reserved 1, 2, 3, 4;
+
+    oneof command_type {
+        CopterCommandSetAngularVelocity set_angular_velocity  = 5;
+        CopterCommandSetLinearVelocity set_linear_velocity    = 6;
+    }
+}

@@ -1,0 +1,12 @@
+syntax = "proto3";
+package mp.pb;
+
+import "vehicles/copter_command.proto";
+
+message Command {
+    reserved 1, 2, 3, 4;
+
+    oneof command_type {
+        vehicles.CopterCommand copter_command = 5;
+    }
+}
