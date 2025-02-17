@@ -105,6 +105,8 @@ void copter::update_grounded(const state_s& state) noexcept
 void copter::update(const state_s& state, float dt) noexcept
 {
     update_grounded(state);
+    
+    m_controller.update(state, dt);
 }
 
 }

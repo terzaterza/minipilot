@@ -29,8 +29,8 @@ class quadcopter : public copter {
     };
 
 public:
-    explicit quadcopter(const quadcopter_params_s& params, quadcopter_actuators_s actuators) noexcept :
-        copter(params), m_params(params), m_actuators(actuators)
+    explicit quadcopter(const quadcopter_params_s& params, copter_controller& controller, quadcopter_actuators_s actuators) noexcept :
+        copter(params, controller), m_params(params), m_actuators(actuators)
     {}
 
 private:

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "mp/vehicles/vehicle.hpp"
+#include "mp/vehicles/copter/control/copter_controller.hpp"
 
 namespace mp {
 
@@ -24,8 +25,9 @@ struct copter_params_s {
 class copter : public vehicle {
 
 public:
-    explicit copter(const copter_params_s& params) noexcept :
+    explicit copter(const copter_params_s& params, copter_controller& controller) noexcept :
         m_params(params),
+        m_controller(controller),
         m_grounded(true)
     {}
 
@@ -88,6 +90,8 @@ private:
 private:
     // Parameters describing a generic copter vehicle
     const copter_params_s& m_params;
+    // Control algorithm
+    copter_controller& m_controller;
     // Is the copter currently grounded
     bool m_grounded;
 };
