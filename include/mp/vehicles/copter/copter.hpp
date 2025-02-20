@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mp/vehicles/vehicle.hpp"
+#include "mp/vehicles/ekf_vehicle.hpp"
 #include "mp/vehicles/copter/control/copter_controller.hpp"
 
 namespace mp {
@@ -22,7 +22,7 @@ struct copter_params_s {
  * implement actuator control based on thrust and torque input
  * and vice versa (quadcopter, helicopter, ...).
  */
-class copter : public vehicle {
+class copter : public ekf_vehicle {
 
 public:
     explicit copter(const copter_params_s& params, copter_controller& controller) noexcept :

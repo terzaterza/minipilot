@@ -2,7 +2,7 @@
 
 #include "mp_config.hpp"
 #include "vehicles/state.hpp"
-#include "vehicles/vehicle.hpp"
+#include "vehicles/ekf_vehicle.hpp"
 #include "tasks/task_accelerometer.hpp"
 #include "tasks/task_gyroscope.hpp"
 #include "emblib/dsp/kalman.hpp"
@@ -24,7 +24,7 @@ public:
         task_gyroscope& task_gyro
     ) noexcept :
         task("Task state estimator", TASK_STATE_PRIORITY, m_task_stack),
-        m_vehicle(&vehicle),
+        m_vehicle(&reinterpret_cast<ekf_vehicle&>(vehicle)),
         m_task_accel(task_accel),
         m_task_gyro(task_gyro),
         m_kalman({0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0})
@@ -128,7 +128,10 @@ private:
     state_s m_state;
     emblib::mutex m_state_mutex;
     
-    vehicle* m_vehicle;
+    // TODO: Once ekf is moved out of the state estimator
+    // into a derived class of the ahrs interface,
+    // then replace this with vehicle* or task_vehicle&
+    ekf_vehicle* m_vehicle;
     task_accelerometer& m_task_accel;
     task_gyroscope& m_task_gyro;
 };

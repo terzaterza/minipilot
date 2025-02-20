@@ -35,7 +35,7 @@ vector3f copter::get_angular_acceleration(
     return (get_torque() - angular_velocity.cross(I_w)).matdivl(I);
 }
 
-vehicle::jacobian_s copter::get_jacobian(
+copter::jacobian_s copter::get_jacobian(
     const vector3f& linear_velocity,
     const vector3f& angular_velocity,
     const vector4f& rotation_q
