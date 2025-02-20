@@ -2,6 +2,7 @@
 
 #include "mp/util/math.hpp"
 #include "mp/vehicles/state.hpp"
+#include "pb/command.pb.h"
 
 namespace mp {
 
@@ -78,9 +79,20 @@ public:
     ) const noexcept = 0;
 
     /**
+     * Runs once at the beginning of the vehicle task
+     * @todo Provide the state as a parameter
+     */
+    virtual void init() noexcept = 0;
+
+    /**
      * Update the internal state (control algorithm for example)
      */
     virtual void update(const state_s& state, float dt) noexcept = 0;
+
+    /**
+     * @returns false if the command is not for this vehicle type
+     */
+    virtual bool handle_command(const pb::Command& command) noexcept = 0;
 
     /**
      * Get information about onboard sensors
@@ -88,7 +100,7 @@ public:
      */
     virtual const sensor_config_s& get_sensor_config() const noexcept = 0;
     
-    /// @todo Add get_cov_matrix() and handle_command()
+    /// @todo Add get_cov_matrix()
 
 };
 
