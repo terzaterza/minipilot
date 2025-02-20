@@ -4,8 +4,8 @@ package mp.pb.vehicles;
 import "types.proto";
 
 message CopterCommandSetAngularVelocity {
-    Vector3f torque = 1;
-    float thrust    = 2;
+    Vector3f angular_velocity   = 1;
+    float thrust                = 2;
 }
 
 message CopterCommandSetLinearVelocity {
