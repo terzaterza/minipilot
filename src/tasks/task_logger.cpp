@@ -24,7 +24,7 @@ void task_logger::run() noexcept
 
         if (use_async) {
             m_log_device.write_async(recv_msg.data, recv_msg.length, [this](ssize_t status) {
-                notify();
+                notify_from_isr();
             });
             // TODO: FIX: Only wait for notification if write_async started correctly (returned true)
             wait_notification();

@@ -37,7 +37,7 @@ void task_receiver::run() noexcept
         // If the start was unsuccessful, go to sleep, else try to parse the data
         if (m_receiver_device.read_async(m_recv_buffer, COMMAND_MSG_MAX_SIZE, [this, &recv_status](ssize_t status) {
             recv_status = status;
-            notify();
+            notify_from_isr();
         })) {
             // If the read was started okay, we're waiting for the notify from the
             // read callback to start the processing
@@ -45,8 +45,13 @@ void task_receiver::run() noexcept
             if (recv_status < 0)
                 continue;
 
-            // Try to parse, if okay, put it into the queue
             pb::Command* command = m_arena.Create<pb::Command>(&m_arena);
+            if (command == nullptr) {
+                log_warning("Can't create the command in the arena!");
+                continue;
+            }
+
+            // Try to parse, if okay, put it into the queue
             if (command->ParseFromArray(m_recv_buffer, recv_status)) {
                 log_debug("Command received and parsed!");
                 // Try to put the command into the queue if there is space

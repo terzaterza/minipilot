@@ -36,7 +36,7 @@ void task_telemetry::run() noexcept
 
             if (m_telemetry_device.is_async_available()) {
                 m_telemetry_device.write_async(m_out_msg_buffer, msg_size, [this](ssize_t status) {
-                    notify();
+                    notify_from_isr();
                 });
                 // TODO: FIX: Only wait for notification if write_async started correctly (returned true)
                 wait_notification();
