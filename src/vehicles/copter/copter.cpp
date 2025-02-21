@@ -5,12 +5,12 @@
 namespace mp {
 
 vector3f copter::get_linear_acceleration(
-    const vector3f& linear_velocity,
-    const quaternionf& rotation_q
+    const vector3f& v,
+    const quaternionf& q
 ) const noexcept
 {
-    const vector3f thrust_force = get_thrust() * rotation_q.rotate_vec(UP);
-    const vector3f drag_force = -m_params.lin_drag_c * linear_velocity;
+    const vector3f thrust_force = get_thrust() * q.rotate_vec(UP);
+    const vector3f drag_force = -m_params.lin_drag_c * v;
 
     vector3f acc = GV + (thrust_force + drag_force) / m_params.mass;
     
@@ -21,24 +21,24 @@ vector3f copter::get_linear_acceleration(
 }
 
 vector3f copter::get_angular_acceleration(
-    const vector3f& linear_velocity,
-    const vector3f& angular_velocity,
-    const quaternionf& rotation_q
+    const vector3f& v,
+    const vector3f& w,
+    const quaternionf& q
 ) const noexcept
 {
     if (m_grounded)
         return vector3f(0);
 
     const matrix3f& I = m_params.moment_of_inertia;
-    const vector3f I_w = I.matmul(angular_velocity);
+    const vector3f I_w = I.matmul(w);
 
-    return (get_torque() - angular_velocity.cross(I_w)).matdivl(I);
+    return (get_torque() - w.cross(I_w)).matdivl(I);
 }
 
 copter::jacobian_s copter::get_jacobian(
-    const vector3f& linear_velocity,
-    const vector3f& angular_velocity,
-    const vector4f& rotation_q
+    const vector3f& v,
+    const vector3f& w,
+    const vector4f& qv
 ) const noexcept
 {
     const float cd = m_params.lin_drag_c;
@@ -48,8 +48,8 @@ copter::jacobian_s copter::get_jacobian(
     const auto& I = m_params.moment_of_inertia;
     const float Ix = I(0, 0), Iy = I(1, 1), Iz = I(2, 2);
     
-    const float qw = rotation_q(0), qx = rotation_q(1), qy = rotation_q(2), qz = rotation_q(3);
-    const float wx = angular_velocity(0), wy = angular_velocity(1), wz = angular_velocity(2);
+    const float qw = qv(0), qx = qv(1), qy = qv(2), qz = qv(3);
+    const float wx = w(0), wy = w(1), wz = w(2);
 
     vector3f da_dv_vec (-cd/m);
     if (m_grounded)
@@ -84,6 +84,7 @@ void copter::update_grounded(const state_s& state) noexcept
         if (state.velocity.dot(UP) > TAKEOFF_VELOCITY_THRESHOLD) {
             m_grounded = false;
             log_info("Copter takeoff!");
+            // TODO: Calculate mass based on the requried thrust for takeoff
         }
     } else {
         bool stationary = state.velocity.norm_sq() < STATIONARY_SPEED_SQ_THRESHOLD;
@@ -107,6 +108,34 @@ void copter::update(const state_s& state, float dt) noexcept
     update_grounded(state);
     
     m_controller.update(state, dt);
+}
+
+bool copter::handle_command(const pb::Command& command) noexcept
+{
+    if (!command.has_copter_command()) {
+        return false;
+    }
+
+    // Result of command execution
+    bool command_status = false;
+    const pb::vehicles::CopterCommand& copter_command = command.copter_command();
+    
+    switch (copter_command.command_type_case()) {
+    case pb::vehicles::CopterCommand::kSetAngularVelocity:
+        const auto& w = copter_command.set_angular_velocity().angular_velocity();
+        const float thrust = copter_command.set_angular_velocity().thrust();
+        command_status = m_controller.set_target_w({w.x(), w.y(), w.z()}, thrust);
+        break;
+    case pb::vehicles::CopterCommand::kSetLinearVelocity:
+        const auto& v = copter_command.set_linear_velocity().velocity();
+        const float dir = copter_command.set_linear_velocity().direction();
+        command_status = m_controller.set_target_v({v.x(), v.y(), v.z()}, dir);
+        break;
+    
+    default:
+        command_status = false;
+    }
+    return command_status;
 }
 
 }

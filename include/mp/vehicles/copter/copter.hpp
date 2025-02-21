@@ -32,21 +32,31 @@ public:
     {}
 
     /**
+     * Run the control algorithm
+     */
+    void update(const state_s& state, float dt) noexcept override;
+
+    /**
+     * Handle copter commands
+     */
+    bool handle_command(const pb::Command& command) noexcept override;
+
+    /**
      * Returns the acceleration of the model in the global coordinate frame
      * assuming that thrust is produced in the model::UP direction
      */
     vector3f get_linear_acceleration(
-        const vector3f& linear_velocity,
-        const quaternionf& rotation_q
+        const vector3f& v,
+        const quaternionf& q
     ) const noexcept override;
 
     /**
      * 
      */
     vector3f get_angular_acceleration(
-        const vector3f& linear_velocity,
-        const vector3f& angular_velocity,
-        const quaternionf& rotation_q
+        const vector3f& v,
+        const vector3f& w,
+        const quaternionf& q
     ) const noexcept override;
 
     /**
@@ -57,11 +67,6 @@ public:
         const vector3f& angular_velocity,
         const vector4f& rotation_q
     ) const noexcept override;
-
-    /**
-     * 
-     */
-    void update(const state_s& state, float dt) noexcept override;
 
 private:
     /**

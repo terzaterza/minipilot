@@ -34,6 +34,7 @@ public:
      * @param v Linear velocity in the global reference frame
      * @param q Rotation quaternion which transforms the local frame to global
      * @todo Can add typedef for vectors in the global and local reference frames
+     * @todo Rename to `get_a`
      */
     virtual vector3f get_linear_acceleration(
         const vector3f& v,
@@ -44,6 +45,7 @@ public:
      * Calculate the model's expected angular acceleration based on the
      * current state in [rad/s^2]
      * @param w Angular velocity in the body frame in [rad/s]
+     * @todo Rename to `get_dw`
      */
     virtual vector3f get_angular_acceleration(
         const vector3f& v,

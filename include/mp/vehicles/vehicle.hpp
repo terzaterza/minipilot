@@ -35,7 +35,7 @@ public:
      * Runs once at the beginning of the vehicle task
      * @todo Provide the state as a parameter
      */
-    virtual void init() noexcept = 0;
+    virtual bool init() noexcept = 0;
 
     /**
      * Update the internal state (control algorithm for example)
