@@ -48,4 +48,8 @@ static constexpr size_t             TASK_RECEIVER_QUEUE_SIZE    = 4;
 static constexpr size_t             TASK_RECEIVER_ARENA_SIZE    = TASK_RECEIVER_QUEUE_SIZE * COMMAND_MSG_MAX_SIZE;
 static constexpr task_priority_e    TASK_RECEIVER_PRIORITY      = TASK_PRIORITY_HIGH;
 
+static constexpr size_t             TASK_VEHICLE_STACK_SIZE     = 4096;
+static constexpr task_priority_e    TASK_VEHICLE_PRIORITY       = TASK_PRIORITY_HIGH;
+static constexpr auto               TASK_VEHICLE_PERIOD         = std::chrono::milliseconds(50); // 20Hz
+
 }

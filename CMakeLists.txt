@@ -30,6 +30,7 @@ add_library(minipilot STATIC
     src/tasks/task_telemetry.cpp
     src/tasks/task_state_estimator.cpp
     src/tasks/task_receiver.cpp
+    src/tasks/task_vehicle.cpp
     src/util/logger.cpp
     src/main.cpp
 )
