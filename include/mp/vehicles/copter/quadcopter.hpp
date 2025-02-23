@@ -6,13 +6,13 @@
 namespace mp {
 
 struct quadcopter_params_s : public copter_params_s {
-    // Distance from the center of mass (rotation) to the motor(s)
-    float arm_length;
-    // Angle between front and rear motors in radians - PI/2 if symmetric
-    float arm_angle;
-    // Coefficient converting from (rad/s)^2 to thrust (Newtons)
+    // Half of the width of the quad measured from the centers of left and right motors
+    float width_half;
+    // Half of the length of the quad measured from the centers of front and back motors
+    float length_half;
+    // Thrust at max throttle (assuming T = thrust_coeff * throttle^2)
     float thrust_coeff;
-    // Coefficient converting from (rad/s)^2 to torque around center of mass
+    // Torque at max throttle (assuming Tau = torque_coeff * throttle^2)
     float torque_coeff;
 };
 
@@ -62,6 +62,11 @@ private:
      * @note Assuming that all motor.read_speed calls are successful
      */
     motor_speeds_s read_motor_speeds(bool square = false) const noexcept;
+
+    /**
+     * Get the direction of each motor, setting 1 if CCW else -1
+     */
+    motor_speeds_s get_motor_directions() const noexcept;
 
 private:
     const quadcopter_params_s& m_params;
