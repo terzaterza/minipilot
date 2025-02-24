@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mp_config.hpp"
+#include "task_config.hpp"
 #include "vehicles/state.hpp"
 #include "vehicles/ekf_vehicle.hpp"
 #include "tasks/task_accelerometer.hpp"

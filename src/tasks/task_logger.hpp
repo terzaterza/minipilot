@@ -1,6 +1,7 @@
 #pragma once
 
-#include "mp_config.hpp"
+#include "task_config.hpp"
+#include "util/logger.hpp"
 #include "emblib/driver/io/char_dev.hpp"
 #include "emblib/rtos/task.hpp"
 #include "emblib/rtos/queue.hpp"
@@ -38,7 +39,7 @@ private:
 
 private:
     struct log_msg_s {
-        char data[LOGGER_MSG_BUFFER_SIZE];
+        char data[LOGGER_MAX_TOTAL_SIZE];
         size_t length;
     };
 

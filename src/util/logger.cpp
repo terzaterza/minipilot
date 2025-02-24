@@ -48,7 +48,7 @@ void logger::flush(log_level_e level) noexcept
 void logger::flush(log_level_e level, const buffer_t& buffer, emblib::char_dev& log_device) noexcept
 {
     // Using the same size for the formatted message as for the protobuf approximately
-    static etl::string<LOGGER_MSG_BUFFER_SIZE> formatted_msg_buffer;
+    static etl::string<LOGGER_MAX_TOTAL_SIZE> formatted_msg_buffer;
     
     static const char* level_prefix[] = {"DEBUG", "INFO", "WARNING", "ERROR"};
     formatted_msg_buffer = level_prefix[static_cast<int>(level)];

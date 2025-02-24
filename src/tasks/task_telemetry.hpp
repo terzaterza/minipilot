@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mp_config.hpp"
+#include "task_config.hpp"
 #include "task_accelerometer.hpp"
 #include "task_gyroscope.hpp"
 #include "task_state_estimator.hpp"

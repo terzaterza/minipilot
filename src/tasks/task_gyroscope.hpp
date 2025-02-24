@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mp_config.hpp"
+#include "task_config.hpp"
 #include "mp/util/math.hpp"
 #include "emblib/driver/sensor/gyroscope.hpp"
 #include "emblib/rtos/task.hpp"
