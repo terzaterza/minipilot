@@ -1,7 +1,7 @@
 #pragma once
 
 #include "task_config.hpp"
-#include "vehicles/state.hpp"
+#include "state/state_estimator.hpp"
 #include "vehicles/ekf_vehicle.hpp"
 #include "tasks/task_accelerometer.hpp"
 #include "tasks/task_gyroscope.hpp"

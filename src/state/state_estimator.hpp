@@ -35,4 +35,33 @@ struct state_s {
     quaternionf rotationq {1, 0, 0, 0};
 };
 
+/**
+ * Input for a state estimator
+ * @note Assign `nullptr` if the appropriate value
+ * is not available
+ */
+struct sensor_data_s {
+    vector3f* accelerometer;
+    vector3f* gyroscope;
+    vector3f* magnetometer;
+    vector3f* gnss;
+};
+
+/**
+ * State estimation algorithm interface
+ */
+class state_estimator {
+
+public:
+    /**
+     * Algorithm iteration
+     */
+    virtual void update(const sensor_data_s& input, float dt) noexcept = 0;
+
+    /**
+     * Get the current state
+     */
+    virtual state_s get_state() const noexcept = 0;
+};
+
 }
