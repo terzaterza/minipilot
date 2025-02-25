@@ -41,10 +41,17 @@ struct state_s {
  * is not available
  */
 struct sensor_data_s {
-    vector3f* accelerometer;
-    vector3f* gyroscope;
-    vector3f* magnetometer;
-    vector3f* gnss;
+    const vector3f* accelerometer = nullptr;
+    const matrix3f* accelerometer_cov = nullptr;
+
+    const vector3f* gyroscope = nullptr;
+    const matrix3f* gyroscope_cov = nullptr;
+
+    const vector3f* magnetometer = nullptr;
+    const matrix3f* magnetometer_cov = nullptr;
+    
+    const vector3f* gnss = nullptr;
+    const matrix3f* gnss_cov = nullptr;
 };
 
 /**
