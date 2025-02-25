@@ -24,6 +24,7 @@ add_subdirectory("protobuf")
 add_library(minipilot STATIC
     src/vehicles/copter/copter.cpp
     src/vehicles/copter/quadcopter.cpp
+    src/vehicles/copter/control/copter_controller_pid.cpp
     src/tasks/task_accelerometer.cpp
     src/tasks/task_gyroscope.cpp
     src/tasks/task_logger.cpp
