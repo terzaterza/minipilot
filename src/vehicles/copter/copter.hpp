@@ -1,7 +1,7 @@
 #pragma once
 
-#include "mp/vehicles/ekf_vehicle.hpp"
-#include "mp/vehicles/copter/control/copter_controller.hpp"
+#include "vehicles/ekf_vehicle.hpp"
+#include "vehicles/copter/control/copter_controller.hpp"
 
 namespace mp {
 

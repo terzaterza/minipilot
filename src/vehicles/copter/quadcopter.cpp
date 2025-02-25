@@ -1,5 +1,5 @@
 #include "mp/util/constants.hpp"
-#include "mp/vehicles/copter/quadcopter.hpp"
+#include "vehicles/copter/quadcopter.hpp"
 #include <cmath>
 
 namespace mp {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mp/vehicles/copter/copter.hpp"
+#include "vehicles/copter/copter.hpp"
 #include "emblib/driver/actuator/motor.hpp"
 
 namespace mp {

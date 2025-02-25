@@ -1,7 +1,7 @@
 #pragma once
 
 #include "task_config.hpp"
-#include "mp/vehicles/vehicle.hpp"
+#include "vehicles/vehicle.hpp"
 #include "task_receiver.hpp"
 #include "task_state_estimator.hpp"
 

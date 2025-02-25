@@ -1,7 +1,7 @@
 #pragma once
 
 #include "mp/util/math.hpp"
-#include "mp/vehicles/state.hpp"
+#include "vehicles/state.hpp"
 #include "pb/command.pb.h"
 
 namespace mp {
@@ -52,6 +52,10 @@ public:
      * TODO: View `sensor_config_s` description
      */
     virtual const sensor_config_s& get_sensor_config() const noexcept = 0;
+
+    /// @todo Add `virtual void navigate(const coords_s& coords, float dt)`
+    /// where coords are provided by the state estimator task based on both
+    /// gps data but also corrected using the ins velocity integration
 
 };
 

@@ -1,5 +1,5 @@
 #include "mp/util/constants.hpp"
-#include "mp/vehicles/copter/copter.hpp"
+#include "vehicles/copter/copter.hpp"
 #include "util/logger.hpp"
 
 namespace mp {
@@ -121,17 +121,18 @@ bool copter::handle_command(const pb::Command& command) noexcept
     const pb::vehicles::CopterCommand& copter_command = command.copter_command();
     
     switch (copter_command.command_type_case()) {
-    case pb::vehicles::CopterCommand::kSetAngularVelocity:
+    case pb::vehicles::CopterCommand::kSetAngularVelocity: {
         const auto& w = copter_command.set_angular_velocity().angular_velocity();
         const float thrust = copter_command.set_angular_velocity().thrust();
         command_status = m_controller.set_target_w({w.x(), w.y(), w.z()}, thrust);
         break;
-    case pb::vehicles::CopterCommand::kSetLinearVelocity:
+    }
+    case pb::vehicles::CopterCommand::kSetLinearVelocity: {
         const auto& v = copter_command.set_linear_velocity().velocity();
         const float dir = copter_command.set_linear_velocity().direction();
         command_status = m_controller.set_target_v({v.x(), v.y(), v.z()}, dir);
         break;
-    
+    }    
     default:
         command_status = false;
     }

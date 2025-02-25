@@ -14,6 +14,9 @@ public:
      * Set target angular velocity and thrust
      * @note Switches the control mode of the copter to angular
      * velocity control if was previously velocity controlled
+     * @returns `true` if targets were set successfully
+     * @note Can return false in case that target angular velocity or
+     * thrust is out of range for example
      */
     virtual bool set_target_w(const vector3f& target_w, float target_thrust) noexcept = 0;
 
