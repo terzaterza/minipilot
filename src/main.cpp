@@ -10,7 +10,7 @@
 
 namespace mp {
 
-int main(const devices_s& devices, vehicle& vehicle)
+int main(const devices_s& devices, state_estimator& state_estimator, vehicle& vehicle)
 {
     // If the logging task is not created, this stays uninitialized
     task_logger* task_logger_ptr = nullptr;
@@ -52,7 +52,7 @@ int main(const devices_s& devices, vehicle& vehicle)
 
     // Create the state estimator task
     static task_state_estimator task_state_estimator(
-        vehicle,
+        state_estimator,
         task_accelerometer,
         task_gyroscope
     );
