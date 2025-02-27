@@ -29,10 +29,10 @@ ekf_inertial::update(const sensor_data_s& input, float dt) noexcept
     R.set_submatrix(3, 3, *input.gyroscope_cov);
 
     // TODO: Get Q from the vehicle
-    constexpr float v_noise = 1e-1;
-    constexpr float a_noise = 1e-1;
+    constexpr float v_noise = 1;
+    constexpr float a_noise = 5e-1;
     constexpr float q_noise = 1e-1;
-    constexpr float w_noise = 1e-2;
+    constexpr float w_noise = 5e-1;
     const auto Q = vectorf<KALMAN_DIM>({
         v_noise, v_noise, v_noise,
         a_noise, a_noise, a_noise,
@@ -54,7 +54,6 @@ ekf_inertial::update(const sensor_data_s& input, float dt) noexcept
     // Position is integration of velocity and acceleration
     const auto v = get_linear_velocity(m_kalman.get_state());
     const auto a = get_linear_acceleration(m_kalman.get_state());
-    const auto q = get_rotation_q(m_kalman.get_state());
     m_position += v * dt + a * (dt * dt / 2.f);
 }
 
@@ -87,7 +86,7 @@ ekf_inertial::state_transition(const state_vec_t& state, float dt) const noexcep
     vector4f qv = q.as_vector();
     vector4f qv_next = qv + (dt / 2.f) * b.matmul(qv);
     // Normalize the quaternion due to numerical errors
-    qv_next /= std::sqrt(qv_next.norm_sq());
+    qv_next /= qv_next.norm();
     
     // Angular acceleration is the first derivative of angular velocity and
     // is calculated according to the Euler's equations for a rotating reference frame
@@ -212,7 +211,7 @@ ekf_inertial::state_to_obs_jacob(const state_vec_t& state, float dt) const noexc
     result.set_submatrix(0, 6, da_dq);
 
     // d(w_exp)/d(w)
-    result(3, 10) = result(4, 11), result(5, 12) = 1.f;
+    result(3, 10) = result(4, 11) = result(5, 12) = 1.f;
 
     return result;
 }
