@@ -5,7 +5,7 @@ namespace mp {
 
 ekf_inertial::ekf_inertial(const ekf_vehicle& vehicle) noexcept :
     m_vehicle(vehicle),
-    m_kalman({0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0})
+    m_kalman({0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0})
 {}
 
 void
@@ -33,11 +33,13 @@ ekf_inertial::update(const sensor_data_s& input, float dt) noexcept
     constexpr float a_noise = 5e-1;
     constexpr float q_noise = 1e-1;
     constexpr float w_noise = 5e-1;
+    constexpr float wd_noise = 1e-1;
     const auto Q = vectorf<KALMAN_DIM>({
         v_noise, v_noise, v_noise,
         a_noise, a_noise, a_noise,
         q_noise, q_noise, q_noise, q_noise,
-        w_noise, w_noise, w_noise
+        w_noise, w_noise, w_noise,
+        wd_noise, wd_noise, wd_noise
     }).as_diagonal();
 
     // Run the kalman filter iteration
@@ -93,11 +95,15 @@ ekf_inertial::state_transition(const state_vec_t& state, float dt) const noexcep
     vector3f dw = m_vehicle.get_angular_acceleration(v, w, q);
     vector3f w_next = w + dt * dw;
 
+    // We're not expecting the drift to change from iteration to iteration
+    const vector3f wd = get_gyro_drift(state);
+
     return {
         v_next(0), v_next(1), v_next(2),
         a_next(0), a_next(1), a_next(2),
         qv_next(0), qv_next(1), qv_next(2), qv_next(3),
-        w_next(0), w_next(1), w_next(2)
+        w_next(0), w_next(1), w_next(2),
+        wd(0), wd(1), wd(2)
     };
 }
 
@@ -156,6 +162,11 @@ ekf_inertial::state_transition_jacob(const state_vec_t& state, float dt) const n
     result(11, 11) += 1.f;
     result(12, 12) += 1.f;
 
+    // dwd_dwd
+    result(13, 13) = 1.f;
+    result(14, 14) = 1.f;
+    result(15, 15) = 1.f;
+
     return result;
 }
 
@@ -167,15 +178,18 @@ ekf_inertial::state_to_obs(const state_vec_t& state, float dt) const noexcept
     const auto a = get_linear_acceleration(state);
     const auto q = get_rotation_q(state);
     const auto w = get_angular_velocity(state);
+    const auto wd = get_gyro_drift(state);
 
     // Expected accelerometer reading = model acc + gravity mapped
     // to the local reference frame
     const vector3f a_exp = q.conjugate().rotate_vec(a - GV);
 
-    // Expected gyroscope reading is just the angular velocity
+    // Expected gyroscope reading = model ang vel + gyro drift
+    const vector3f w_exp = w + wd;
+
     return {
         a_exp(0), a_exp(1), a_exp(2),
-        w(0), w(1), w(2)
+        w_exp(0), w_exp(1), w_exp(2)
     };
 }
 
@@ -212,6 +226,9 @@ ekf_inertial::state_to_obs_jacob(const state_vec_t& state, float dt) const noexc
 
     // d(w_exp)/d(w)
     result(3, 10) = result(4, 11) = result(5, 12) = 1.f;
+
+    // d(w_exp)/d(wd)
+    result(3, 13) = result(4, 14) = result(5, 15) = 1.f;
 
     return result;
 }

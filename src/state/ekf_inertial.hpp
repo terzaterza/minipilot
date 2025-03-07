@@ -21,8 +21,9 @@ class ekf_inertial : public state_estimator {
      * 3 - acceleration
      * 4 - rotation quaternion
      * 3 - angular velocity
+     * 3 - gyro drift
      */
-    static constexpr size_t KALMAN_DIM = 13;
+    static constexpr size_t KALMAN_DIM = 16;
 
     /**
      * Dimension of the measurement vector
@@ -109,6 +110,12 @@ private:
     static vector3f get_angular_velocity(const state_vec_t& state) noexcept
     {
         return {state(10), state(11), state(12)};
+    }
+
+    // Extract the gyro drift vector from the kalman state vector
+    static vector3f get_gyro_drift(const state_vec_t& state) noexcept
+    {
+        return {state(13), state(14), state(15)};
     }
 
 private:
