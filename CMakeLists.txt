@@ -33,6 +33,7 @@ add_library(minipilot STATIC
     src/tasks/task_receiver.cpp
     src/tasks/task_vehicle.cpp
     src/state/ekf_inertial.cpp
+    src/util/config.cpp
     src/util/logger.cpp
     src/main.cpp
 )
