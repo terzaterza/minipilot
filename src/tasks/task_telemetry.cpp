@@ -9,7 +9,7 @@ void task_telemetry::run() noexcept
 {
     // This doesn't have to be an assert
     // Can just exit and turn off the telemetry task
-    assert(m_telemetry_device.probe());
+    assert(m_telemetry_device.probe(emblib::milliseconds(0)));
 
     while (true) {
         pb::TelemetryMessage* msg = m_arena.Create<pb::TelemetryMessage>(&m_arena);

@@ -1,4 +1,4 @@
-#include "./logger.hpp"
+#include "logger.hpp"
 #include "pb/log.pb.h"
 
 namespace mp {
@@ -47,6 +47,9 @@ void logger::flush(log_level_e level) noexcept
 
 void logger::flush(log_level_e level, const buffer_t& buffer, emblib::char_dev& log_device) noexcept
 {
+    // Don't wait if cannot write currently
+    static constexpr auto WRITE_TIMEOUT = std::chrono::milliseconds(0);
+
     // Using the same size for the formatted message as for the protobuf approximately
     static etl::string<LOGGER_MAX_TOTAL_SIZE> formatted_msg_buffer;
     
@@ -56,7 +59,7 @@ void logger::flush(log_level_e level, const buffer_t& buffer, emblib::char_dev& 
     formatted_msg_buffer += buffer;
     formatted_msg_buffer += "\n";
     
-    log_device.write(formatted_msg_buffer.c_str(), formatted_msg_buffer.size());
+    log_device.write(formatted_msg_buffer.c_str(), formatted_msg_buffer.size(), WRITE_TIMEOUT);
     formatted_msg_buffer.clear();
 }
 
