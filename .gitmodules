@@ -1,3 +1,6 @@
 [submodule "lib/protobuf"]
 	path = lib/protobuf
 	url = https://github.com/protocolbuffers/protobuf
+[submodule "lib/emblib"]
+	path = lib/emblib
+	url = https://github.com/terzaterza/emblib
