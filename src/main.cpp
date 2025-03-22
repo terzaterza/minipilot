@@ -11,7 +11,7 @@
 namespace mp {
 
 // Timeout for checking if the device is properly working
-static constexpr auto DEVICE_PROBE_TIMEOUT = std::chrono::milliseconds(10);
+inline constexpr auto DEVICE_PROBE_TIMEOUT = std::chrono::milliseconds(10);
 
 int main(const devices_s& devices, state_estimator& state_estimator, vehicle& vehicle)
 {

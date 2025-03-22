@@ -12,9 +12,9 @@ namespace mp {
 using emblib::log_level_e;
 
 // Maximum string size in characters (bytes)
-static constexpr size_t LOGGER_MAX_INPUT_SIZE = 110;
+inline constexpr size_t LOGGER_MAX_INPUT_SIZE = 110;
 // String size + prefix and suffix
-static constexpr size_t LOGGER_MAX_TOTAL_SIZE = LOGGER_MAX_INPUT_SIZE + 16;
+inline constexpr size_t LOGGER_MAX_TOTAL_SIZE = LOGGER_MAX_INPUT_SIZE + 16;
 
 /**
  * Minipilot logger
