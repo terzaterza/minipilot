@@ -1,29 +1,27 @@
-#include "./task_accelerometer.hpp"
-#include "util/logger.hpp"
+#include "task_accelerometer.hpp"
 
 namespace mp {
 
-void task_accelerometer::run() noexcept
+task_accelerometer::task_accelerometer(
+    emblib::accelerometer& accelerometer,
+    matrix_t transform,
+    vector_t bias
+) :
+    task_three_axis_sensor(
+        accelerometer,
+        "Task accelerometer",
+        TASK_ACCEL_PRIORITY,
+        TASK_ACCEL_PERIOD
+    ),
+    m_bias(bias),
+    m_transform(transform)
+{}
+
+task_accelerometer::vector_t
+task_accelerometer::process(const vector_t& raw_data) const noexcept
 {
-    assert(m_accelerometer.probe());
-
-    float read_data[3];
-    while (true) {
-        if (m_accelerometer.read_all_axes(read_data)) {
-            // TODO: Add ability to remap axis from the sensor to the expected order here
-            emblib::vector3f new_raw {read_data[0], read_data[1], read_data[2]};
-            // TODO: Compute the filtered value here
-
-            emblib::scoped_lock lock(m_read_mutex);
-            m_last_raw = new_raw;
-            m_last_filtered = new_raw;
-            // TODO: Assign the filtered value here
-        } else {
-            log_warning("Accelerometer reading failed");
-        }
-
-        sleep_periodic(TASK_ACCEL_PERIOD);
-    }
+    // TODO: Add (conditional) low-pass filtering
+    return m_transform.matmul(raw_data - m_bias);
 }
 
 }

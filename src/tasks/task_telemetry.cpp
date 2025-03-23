@@ -24,9 +24,9 @@ void task_telemetry::run() noexcept
         
         // Sensor data
         set_pb_vector3f(msg->mutable_sensor_data()->mutable_acc_raw(), m_task_accel.get_raw());
-        set_pb_vector3f(msg->mutable_sensor_data()->mutable_acc_filtered(), m_task_accel.get_filtered());
+        set_pb_vector3f(msg->mutable_sensor_data()->mutable_acc_corrected(), m_task_accel.get_corrected());
         set_pb_vector3f(msg->mutable_sensor_data()->mutable_gyro_raw(), m_task_gyro.get_raw());
-        set_pb_vector3f(msg->mutable_sensor_data()->mutable_gyro_filtered(), m_task_gyro.get_raw());
+        set_pb_vector3f(msg->mutable_sensor_data()->mutable_gyro_corrected(), m_task_gyro.get_corrected());
 
         // TODO: Send vehicle specific telemetry here
 

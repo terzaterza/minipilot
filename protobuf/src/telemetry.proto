@@ -28,9 +28,9 @@ message TelemetrySensorData {
     reserved 5, 6, 7, 8, 9, 10;
 
     Vector3f acc_raw        = 11;
-    Vector3f acc_filtered   = 12;
+    Vector3f acc_corrected  = 12;
     Vector3f gyro_raw       = 13;
-    Vector3f gyro_filtered  = 14;
+    Vector3f gyro_corrected = 14;
     // Magnetometer, GPS, ...
 }
 

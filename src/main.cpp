@@ -30,20 +30,26 @@ int main(const devices_s& devices, state_estimator& state_estimator, vehicle& ve
     }
 
     // Accelerometer is required
-    if (!devices.accelerometer.probe()) {
+    if (!devices.accelerometer.sensor.probe()) {
         log_error("Accelerometer not available!");
         return 1;
     }
+    // TODO: Read bias from the configuration if exists, else warn the user
+    vector3f accelerometer_bias = 0;
     // Create the accelerometer task
-    static task_accelerometer task_accelerometer(devices.accelerometer);
+    static task_accelerometer task_accelerometer(
+        devices.accelerometer.sensor,
+        devices.accelerometer.transform,
+        accelerometer_bias
+    );
 
     // Gyroscope is required
-    if (!devices.gyroscope.probe()) {
+    if (!devices.gyroscope.sensor.probe()) {
         log_error("Gyroscope not available!");
         return 1;
     }
     // Create the gyroscope task
-    static task_gyroscope task_gyroscope(devices.gyroscope);
+    static task_gyroscope task_gyroscope(devices.gyroscope.sensor, devices.gyroscope.transform);
 
     // Receiver is required
     if (!devices.receiver_device.probe(DEVICE_PROBE_TIMEOUT)) {

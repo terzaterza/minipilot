@@ -1,29 +1,25 @@
-#include "./task_gyroscope.hpp"
-#include "util/logger.hpp"
+#include "task_gyroscope.hpp"
 
 namespace mp {
 
-void task_gyroscope::run() noexcept
+task_gyroscope::task_gyroscope(
+    emblib::gyroscope& gyroscope,
+    matrix_t transform
+) :
+    task_three_axis_sensor(
+        gyroscope,
+        "Task gyroscope",
+        TASK_GYRO_PRIORITY,
+        TASK_GYRO_PERIOD
+    ),
+    m_transform(transform)
+{}
+
+task_gyroscope::vector_t
+task_gyroscope::process(const vector_t& raw_data) const noexcept
 {
-    assert(m_gyroscope.probe());
-
-    float read_data[3];
-    while (true) {
-        if (m_gyroscope.read_all_axes(read_data)) {
-            // TODO: Add ability to remap axis from the sensor to the expected order here
-            emblib::vector3f new_raw {read_data[0], read_data[1], read_data[2]};
-            // TODO: Compute the filtered value here
-
-            emblib::scoped_lock lock(m_read_mutex);
-            m_last_raw = new_raw;
-            m_last_filtered = new_raw;
-            // TODO: Assign the filtered value here
-        } else {
-            log_warning("Gyroscope reading failed");
-        }
-
-        sleep_periodic(TASK_GYRO_PERIOD);
-    }
+    // TODO: Add (conditional) band-pass / high-pass filtering
+    return m_transform.matmul(raw_data);
 }
 
 }

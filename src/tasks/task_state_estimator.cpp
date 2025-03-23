@@ -16,8 +16,8 @@ void task_state_estimator::run() noexcept
     
     while (true) {
         // Get latest sensor measurements
-        vector3f a_read = m_task_accel.get_filtered();
-        vector3f w_read = m_task_gyro.get_filtered();
+        vector3f a_read = m_task_accel.get_corrected();
+        vector3f w_read = m_task_gyro.get_corrected();
         // TODO: Get rest of the sensors here
         
         sensor_data_s sensor_data {

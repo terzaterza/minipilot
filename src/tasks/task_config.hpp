@@ -27,11 +27,9 @@ inline constexpr size_t             TASK_TELEMETRY_ARENA_SIZE   = 256;
 inline constexpr task_priority_e    TASK_TELEMETRY_PRIORITY     = TASK_PRIORITY_LOW;
 inline constexpr auto               TASK_TELEMETRY_PERIOD       = std::chrono::milliseconds(200); // 5Hz
 
-inline constexpr size_t             TASK_ACCEL_STACK_SIZE       = 512;
 inline constexpr task_priority_e    TASK_ACCEL_PRIORITY         = TASK_PRIORITY_REALTIME;
 inline constexpr auto               TASK_ACCEL_PERIOD           = std::chrono::milliseconds(5); // 200Hz
 
-inline constexpr size_t             TASK_GYRO_STACK_SIZE        = 512;
 inline constexpr task_priority_e    TASK_GYRO_PRIORITY          = TASK_PRIORITY_REALTIME;
 inline constexpr auto               TASK_GYRO_PERIOD            = std::chrono::milliseconds(5); // 200Hz
 
