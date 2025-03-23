@@ -14,22 +14,6 @@ namespace mp {
  */
 class vehicle {
 
-public:    
-    /**
-     * Information about the sensor configurations onboard the vehicle
-     * @todo Make the vehicle able to provide the list of all onboard
-     * sensors and create the appropriate sensor task for each of those
-     * and modify the state estimator to use all the appropriate sensors
-     */
-    struct sensor_config_s {
-        // Map the accelerometer readings to the body coordinate frame
-        matrix3f accelerometer_transform;
-        // Map the gyroscope readings to the body coordinate frame
-        matrix3f gyroscope_transform;
-        
-        // vector3f accelerometer_com_displacement;
-    };
-
 public:
     /**
      * Runs once at the beginning of the vehicle task
@@ -49,9 +33,12 @@ public:
 
     /**
      * Get information about onboard sensors
-     * TODO: View `sensor_config_s` description
+     * @note Should provide a list of all available sensors and a task
+     * should be created for each one. The state estimator can have a
+     * virtual method to fetch all the required sensor data and use it
+     * to call the state estimator's update iteration
      */
-    virtual const sensor_config_s& get_sensor_config() const noexcept = 0;
+    // virtual const sensor_config_s& get_sensor_config() const noexcept = 0;
 
     /// @todo Add `virtual void navigate(const coords_s& coords, float dt)`
     /// where coords are provided by the state estimator task based on both
